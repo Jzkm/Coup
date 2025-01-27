@@ -1,5 +1,4 @@
 /*
-
 generic_player = {
     handle: "DAMSOS",
     coins: 0,
@@ -17,8 +16,9 @@ generic_game = {
     action_targer: "DAMSOS", // gracz którego dotyczy akcja (nie wszystkie akcje kogoś dotyczą!)
     interruptor: "DAMSOS", //gracz który zchallengował właścieciela tury
 };
-
 */
+
+const lodash = require("lodash");
 
 var characters = ["ambassador","inquisitor","contessa","captain","duke","assasin"];
 
@@ -31,7 +31,6 @@ class Player {
 
     constructor(handle) {
         this.handle = handle;
-        this.coins = 2;
     }
 }
 
@@ -49,12 +48,38 @@ class Game {
     constructor(game_id,players) {
         this.game_id = game_id;
         this.players = players;
-        
+    }
+    
+    //wołana na początku gry lub podczas zaczynania ponownej rozgrywki (z tymi samymi graczami i w tym samym pokoju)
+    game_setup() {
+        this.deck = [];
         for(let character of characters) {
             for(let i=0;i<3;i++)
                 this.deck.push(character);
         }
+        this.deck = lodash.shuffle(this.deck);
 
+        this.discard = [];
         this.turn = this.players[0];
+
+        for(let player of this.players) {
+            player.coins = 2;
+            player.cards = this.deck.splice(0,2);
+        }
+
+        console.log("Game initialization!");
+    }
+
+    print_game_state() {
+        console.log("Player's items (name,coins,cards):");
+        for(let player of this.players) {
+            console.log(player.handle, player.coins, player.cards);
+        }
+
     }
 }
+
+
+var game = new Game(1,[new Player("Jan"), new Player("CyprJan")]);
+game.game_setup();
+game.print_game_state();
