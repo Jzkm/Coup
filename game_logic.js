@@ -21,6 +21,7 @@ generic_game = {
 const lodash = require("lodash");
 
 var characters = ["ambassador","inquisitor","contessa","captain","duke","assasin"];
+var actions = ["income", "foreign_aid", "coup", "exchange", "examine", "steal", "tax", "assassinate"];
 
 // UWAGA: Gracz jest nie tym samym co użytnownik strony
 // tzn. jeden użytkownik może mieć 2 instancje klasy Player (grając jednocześnie w Coup_room1 i w Coup_room2)
@@ -39,11 +40,11 @@ class Game {
     players = []; //intancja klasy Player
     deck = []; //tablica kart, których nikt nie ma (kolejność MA znaczenie!)
     discard = []; //tablica kart, które zostały odrzucone przez graczy
-    turn = 0; //tura którego gracza, wartoscia jest instancja klasy Player
-    turn_type = 0; //typ (z grafu), który jest aktualnie
+    turn_owner = new Player("Wildcard"); //tura którego gracza, wartoscia jest instancja klasy Player
+    state = 1; //typ (z grafu), który jest aktualnie
     selected_action = "";
-    action_targer = ""; // gracz którego dotyczy akcja (nie wszystkie akcje kogoś dotyczą!)
-    interruptor = ""; //gracz który zchallengował właścieciela tury
+    target = ""; // gracz którego dotyczy akcja (nie wszystkie akcje kogoś dotyczą!)
+    source = ""; //gracz który zchallengował lub zblokował
 
     constructor(game_id,players) {
         this.game_id = game_id;
@@ -61,6 +62,7 @@ class Game {
 
         this.discard = [];
         this.turn = this.players[0];
+        this.state = 1;
 
         for(let player of this.players) {
             player.coins = 2;
@@ -77,9 +79,120 @@ class Game {
         }
 
     }
+
+    draw_card_from_deck() {
+        if(this.deck,length > 0) {
+            return this.deck.splice(0,1)[0];
+        }
+        else {
+            throw new Error("Can't draw a card from empty deck!");
+        }
+    }
+
+    put_card_in_deck(card) {
+        let rand_index = lodash.random(this.deck.length);
+        this.deck.splice(rand_index,0,card);
+    }
+
+    valid_action(player,action,source,target) {
+        return true;
+    }
+
+    character_of_action(action) {
+        if(action == "exchange") {
+            return "ambassador";
+        }
+        if(action == "examine") {
+            return "inquisitor";
+        }
+        if(action == "steal") {
+            return "captain";
+        }
+        if(action == "tax") {
+            return "duke";
+        }
+        if(action == "assassinate") {
+            return "assasin";
+        }
+        return "";
+    }
+
+    handle_state1(player,action,source,target) {
+        this.selected_action = action;
+        if(action == "assassinate" || action == "coup" || action == "examine" || action == "steal") {
+            this.target = target;
+        }
+        else {
+            this.target = "";
+        }
+        this.source = "";
+
+        this.state = 2;
+
+        console.log("State 1 resolved");
+    }
+
+    handle_state2(player,action,source,target) {
+        if(action == "challange") {
+            this.state = 3;
+            this.source = source;
+        }
+        else {
+            this.state = 6;
+        }
+        console.log("State 2 resolved");
+    }
+
+    handle_state3(player,action,source,target) {
+        if(this.turn_owner.cards.includes(this.character_of_action(this.selected_action))) {
+            this.state = 5;
+        }
+        else {
+            this.state = 4;
+        }
+        console.log("State 3 resolved");
+    }
+
+    handle_state4(player,action,source,target) {
+        this.turn_owner.cards.splice(this.turn_owner.cards.indexOf(action),1);
+
+        this.state = 14;
+        console.log("State 4 resolved");
+    }
+
+    handle_state5(player,action,source,target) {
+        this.source.cards.splice(this.source.cards.indexOf(action),1);
+
+        this.source.cards.splice(this.turn_owner.cards.indexOf(this.selected_action),1);
+        this.put_card_in_deck(this.character_of_action(this.selected_action));
+        this.source.cards.push(this.draw_card_from_deck());
+
+        this.state = 6;
+        console.log("State 5 resolved");
+    }
+
+    handle_state6(player,action,source,target) {
+        if(this.selected_action == "assassinate")
+        this.turn_owner.coins -= 3;
+
+        this.state = 7;
+        console.log("State 6 resolved");
+    }
+
+    handle_action(player,action,source,target) {
+        if(this.valid_action(player,action,source,target)) {
+            let fn = "handle_state" + this.state;
+            this[fn](player,action,source,target);
+            console.log("Successful action");
+        }
+        else {
+            console.log("Invalid action");
+        }
+    }
 }
 
-
-var game = new Game(1,[new Player("Jan"), new Player("CyprJan")]);
+var p1 = new Player("Jan"), p2 = new Player("CyprJan");
+var game = new Game(1,[p1, p2]);
 game.game_setup();
 game.print_game_state();
+game.handle_action(p1,"xd","xd","xd");
