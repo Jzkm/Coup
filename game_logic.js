@@ -44,7 +44,8 @@ class Game {
     state = 1; //typ (z grafu), który jest aktualnie
     selected_action = "";
     target = ""; // gracz którego dotyczy akcja (nie wszystkie akcje kogoś dotyczą!)
-    source = ""; //gracz który zchallengował lub zblokował
+    challanger = ""; //gracz który zchallengował
+    blocker = ""; //gracz który zblokował
 
     constructor(game_id,players) {
         this.game_id = game_id;
@@ -94,6 +95,10 @@ class Game {
         this.deck.splice(rand_index,0,card);
     }
 
+    valid_block() {
+
+    }
+
     valid_action(player,action,source,target) {
         return true;
     }
@@ -125,7 +130,7 @@ class Game {
         else {
             this.target = "";
         }
-        this.source = "";
+        this.challanger = "";
 
         this.state = 2;
 
@@ -135,7 +140,7 @@ class Game {
     handle_state2(player,action,source,target) {
         if(action == "challange") {
             this.state = 3;
-            this.source = source;
+            this.challanger = source;
         }
         else {
             this.state = 6;
@@ -161,11 +166,11 @@ class Game {
     }
 
     handle_state5(player,action,source,target) {
-        this.source.cards.splice(this.source.cards.indexOf(action),1);
+        this.challanger.cards.splice(this.challanger.cards.indexOf(action),1);
 
-        this.source.cards.splice(this.turn_owner.cards.indexOf(this.selected_action),1);
+        this.challanger.cards.splice(this.turn_owner.cards.indexOf(this.selected_action),1);
         this.put_card_in_deck(this.character_of_action(this.selected_action));
-        this.source.cards.push(this.draw_card_from_deck());
+        this.challanger.cards.push(this.draw_card_from_deck());
 
         this.state = 6;
         console.log("State 5 resolved");
@@ -173,11 +178,47 @@ class Game {
 
     handle_state6(player,action,source,target) {
         if(this.selected_action == "assassinate")
-        this.turn_owner.coins -= 3;
+            this.turn_owner.coins -= 3;
 
         this.state = 7;
         console.log("State 6 resolved");
     }
+
+    handle_state7(player,action,source,target) {
+        if(action == "block") {
+            this.state = 8;
+            this.blocker = source;
+        }
+        else {
+            this.state = 10;
+        }
+        console.log("State 7 resolved");
+    }
+
+    handle_state8(player,action,source,target) {
+        if(action == "challange") {
+            this.state = 9;
+            this.challanger = source;
+        }
+        else {
+            this.state = 11;
+        }
+        console.log("State 8 resolved");
+    }
+
+    handle_state9(player,action,source,target) {
+        // if(this.blocker.cards.includes(this.blocker_of_action(this.selected_action))) {
+        if(valid_block()) {
+            this.state = 5;
+        }
+        else {
+            this.state = 4;
+        }
+        console.log("State 9 resolved");
+        
+    }
+
+    
 
     handle_action(player,action,source,target) {
         if(this.valid_action(player,action,source,target)) {

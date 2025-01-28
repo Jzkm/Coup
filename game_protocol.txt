@@ -5,7 +5,7 @@ Dla każdego state'u gry wyszystkie możliwe wartości zmiennych:
         action: "income", "foreign_aid", "coup", "exchange", "examine", "steal", "tax", "assassinate" 
         target: *jeden z graczy* (klasa Player)
     State 2:
-        action: "challange,no_challange"
+        action: "challange","no_challange"
         source: *jeden z graczy* (klasa Player)
     State 3:
         action: "show_card"
@@ -16,7 +16,7 @@ Dla każdego state'u gry wyszystkie możliwe wartości zmiennych:
     State 6:
         action: "-", "pay_for_action"
     State 7:
-        action: "block,no_block"
+        action: "block","no_block"
         source: *jeden z graczy* (klasa Player)
     State 8:
         action: "challange,no_challange"
