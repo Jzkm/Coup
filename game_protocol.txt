@@ -30,7 +30,7 @@ Dla każdego state'u gry wyszystkie możliwe wartości zmiennych:
     State 12:
         action: "successful_block"
     State 13:
-        action: "lose_influence"
+        action: "ambassador","inquisitor","contessa","captain","duke","assasin"
     State 14:
         action: "end_of_turn"
 

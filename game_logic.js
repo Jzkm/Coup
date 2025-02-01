@@ -95,14 +95,6 @@ class Game {
         this.deck.splice(rand_index,0,card);
     }
 
-    valid_block() {
-
-    }
-
-    valid_action(player,action,source,target) {
-        return true;
-    }
-
     character_of_action(action) {
         if(action == "exchange") {
             return "ambassador";
@@ -120,6 +112,67 @@ class Game {
             return "assasin";
         }
         return "";
+    }
+
+    // zwraca listę characterów które mogą zblokować dany action
+    blocker_of_action(action) {
+        if(action == "foreign_aid") {
+            return ["duke"];
+        }
+        if(action == "examine") {
+            return ["contessa"];
+        }
+        if(action == "steal") {
+            return ["captain","ambassador","inquisitor"];
+        }
+        if(action == "assassinate") {
+            return ["contessa"];
+        }
+        return "";
+    }
+
+    // sprawdza czy this.blocker ma karty potrzebne do zblokowania this.selected_action
+    valid_block() {
+        for(let character of this.blocker_of_action(this.selected_action)) {
+            if(this.blocker.cards.includes(character))
+                return true;
+        }
+        return false;
+    }
+
+    valid_action(player,action,source,target) {
+        return true;
+    }
+
+    resolve_action() {
+        if(this.selected_action == "income") {
+            //łubudubu do doklepania straszna akcja
+            this.turn_owner.coins += 1;
+        }
+        if(this.selected_action == "foreign_aid") {
+            //łubudubu do doklepania straszna akcja
+            this.turn_owner.coins += 2;
+        }
+        if(this.selected_action == "coup") {
+            //łubudubu do doklepania straszna akcja
+            this.turn_owner.coins += 3;
+        }
+        if(this.selected_action == "exchange") {
+            this.turn_owner.coins += 4;
+        }
+        if(this.selected_action == "examine") {
+            this.turn_owner.coins += 5;
+        }
+        if(this.selected_action == "steal") {
+            this.turn_owner.coins += 6;
+        }
+        if(this.selected_action == "tax") {
+            this.turn_owner.coins += 7;
+        }
+        if(this.selected_action == "assassinate") {
+            this.turn_owner.coins += 8;
+        }
+        console.log("Action resolved!");
     }
 
     handle_state1(player,action,source,target) {
@@ -168,9 +221,9 @@ class Game {
     handle_state5(player,action,source,target) {
         this.challanger.cards.splice(this.challanger.cards.indexOf(action),1);
 
-        this.challanger.cards.splice(this.turn_owner.cards.indexOf(this.selected_action),1);
+        this.turn_owner.cards.splice(this.turn_owner.cards.indexOf(this.character_of_action(this.selected_action)),1);
         this.put_card_in_deck(this.character_of_action(this.selected_action));
-        this.challanger.cards.push(this.draw_card_from_deck());
+        this.turn_owner.cards.push(this.draw_card_from_deck());
 
         this.state = 6;
         console.log("State 5 resolved");
@@ -209,13 +262,51 @@ class Game {
     handle_state9(player,action,source,target) {
         // if(this.blocker.cards.includes(this.blocker_of_action(this.selected_action))) {
         if(valid_block()) {
-            this.state = 5;
+            this.state = 12;
         }
         else {
-            this.state = 4;
+            this.state = 13;
         }
         console.log("State 9 resolved");
         
+    }
+
+    handle_state10(player,action,source,target) {
+        // rozwiąż akcje 
+        resolve_action();
+
+        this.state = 14;
+        console.log("State 10 resolved");
+    }
+
+    handle_state11(player,action,source,target) {
+        this.state = 14;
+        console.log("State 11 resolved");
+    }
+
+    handle_state12(player,action,source,target) {
+        this.challanger.cards.splice(this.challanger.cards.indexOf(action),1);
+
+        this.blocker.cards.splice(this.blocker.cards.indexOf(this.blocker_of_action(this.selected_action)),1);
+        this.put_card_in_deck(this.blocker_of_action(this.selected_action));
+        this.blocker.cards.push(this.draw_card_from_deck());
+
+        this.state = 11;
+        console.log("State 12 resolved");
+    }
+
+    handle_state13(player,action,source,target) {
+        this.blocker.cards.splice(this.blocker.cards.indexOf(action),1);
+
+        this.state = 10;
+        console.log("State 13 resolved");
+    }
+
+    handle_state14(player,action,source,target) {
+
+        this.state = 1;
+        console.log("State 14 resolved");
+        console.log("End of turn");
     }
 
     
