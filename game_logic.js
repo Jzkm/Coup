@@ -17,8 +17,13 @@ generic_game = {
     interruptor: "DAMSOS", //gracz który zchallengował właścieciela tury
 };
 */
-
 const lodash = require("lodash");
+const readline = require('readline');
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
 
 var characters = ["ambassador","inquisitor","contessa","captain","duke","assasin"];
 var actions = ["income", "foreign_aid", "coup", "exchange", "examine", "steal", "tax", "assassinate"];
@@ -32,6 +37,10 @@ class Player {
 
     constructor(handle) {
         this.handle = handle;
+    }
+
+    toString() {
+        return this.handle;
     }
 }
 
@@ -62,7 +71,7 @@ class Game {
         this.deck = lodash.shuffle(this.deck);
 
         this.discard = [];
-        this.turn = this.players[0];
+        this.turn_owner = this.players[0];
         this.state = 1;
 
         for(let player of this.players) {
@@ -74,15 +83,22 @@ class Game {
     }
 
     print_game_state() {
+        console.log("Game state: " + this.state);
+        console.log("Turn of player: " + this.turn_owner);
+        console.log("Selected action: " + this.selected_action);
+        console.log("Target: " + this.target);
+        console.log("Challanger: " + this.challanger);
+        console.log("Blocker: " + this.blocker);
         console.log("Player's items (name,coins,cards):");
         for(let player of this.players) {
             console.log(player.handle, player.coins, player.cards);
         }
+        console.log();
 
     }
 
     draw_card_from_deck() {
-        if(this.deck,length > 0) {
+        if(this.deck.length > 0) {
             return this.deck.splice(0,1)[0];
         }
         else {
@@ -144,38 +160,63 @@ class Game {
         return true;
     }
 
+    next_player_turn() {
+        var idx = 0;
+        while(idx < this.players.length) {
+            if(this.players[idx].handle == this.turn_owner)
+                break;
+                
+            idx++;
+        }
+
+        idx = (idx + 1) % (this.players.length);
+        return this.players[idx];
+    }
+
     resolve_action() {
         if(this.selected_action == "income") {
             //łubudubu do doklepania straszna akcja
-            this.turn_owner.coins += 1;
+            // this.turn_owner.coins += 1;
+            console.log("income");
         }
-        if(this.selected_action == "foreign_aid") {
+        else if(this.selected_action == "foreign_aid") {
             //łubudubu do doklepania straszna akcja
-            this.turn_owner.coins += 2;
+            // this.turn_owner.coins += 2;
+            console.log("foreign_aid");
         }
-        if(this.selected_action == "coup") {
+        else if(this.selected_action == "coup") {
             //łubudubu do doklepania straszna akcja
-            this.turn_owner.coins += 3;
+            // this.turn_owner.coins += 3;
+            console.log("coup");
         }
-        if(this.selected_action == "exchange") {
-            this.turn_owner.coins += 4;
+        else if(this.selected_action == "exchange") {
+            // this.turn_owner.coins += 4;
+            console.log("exchange");
         }
-        if(this.selected_action == "examine") {
-            this.turn_owner.coins += 5;
+        else if(this.selected_action == "examine") {
+            // this.turn_owner.coins += 5;
+            console.log("examine");
         }
-        if(this.selected_action == "steal") {
-            this.turn_owner.coins += 6;
+        else if(this.selected_action == "steal") {
+            // this.turn_owner.coins += 6;
+            console.log("steal");
         }
-        if(this.selected_action == "tax") {
-            this.turn_owner.coins += 7;
+        else if(this.selected_action == "tax") {
+            // this.turn_owner.coins += 7;
+            console.log("tax");
         }
-        if(this.selected_action == "assassinate") {
-            this.turn_owner.coins += 8;
+        else if(this.selected_action == "assassinate") {
+            // this.turn_owner.coins += 8;
+            console.log("assassinate");
+        }
+        else {
+            console.log("Action name not found!");
         }
         console.log("Action resolved!");
     }
 
-    handle_state1(player,action,source,target) {
+    handle_state1(action,source,target) {
+        // console.log("XDDDDDD " + action + " " + target);
         this.selected_action = action;
         if(action == "assassinate" || action == "coup" || action == "examine" || action == "steal") {
             this.target = target;
@@ -186,11 +227,10 @@ class Game {
         this.challanger = "";
 
         this.state = 2;
-
         console.log("State 1 resolved");
     }
 
-    handle_state2(player,action,source,target) {
+    handle_state2(action,source,target) {
         if(action == "challange") {
             this.state = 3;
             this.challanger = source;
@@ -201,7 +241,7 @@ class Game {
         console.log("State 2 resolved");
     }
 
-    handle_state3(player,action,source,target) {
+    handle_state3(action,source,target) {
         if(this.turn_owner.cards.includes(this.character_of_action(this.selected_action))) {
             this.state = 5;
         }
@@ -211,14 +251,14 @@ class Game {
         console.log("State 3 resolved");
     }
 
-    handle_state4(player,action,source,target) {
+    handle_state4(action,source,target) {
         this.turn_owner.cards.splice(this.turn_owner.cards.indexOf(action),1);
 
         this.state = 14;
         console.log("State 4 resolved");
     }
 
-    handle_state5(player,action,source,target) {
+    handle_state5(action,source,target) {
         this.challanger.cards.splice(this.challanger.cards.indexOf(action),1);
 
         this.turn_owner.cards.splice(this.turn_owner.cards.indexOf(this.character_of_action(this.selected_action)),1);
@@ -229,7 +269,7 @@ class Game {
         console.log("State 5 resolved");
     }
 
-    handle_state6(player,action,source,target) {
+    handle_state6(action,source,target) {
         if(this.selected_action == "assassinate")
             this.turn_owner.coins -= 3;
 
@@ -237,7 +277,7 @@ class Game {
         console.log("State 6 resolved");
     }
 
-    handle_state7(player,action,source,target) {
+    handle_state7(action,source,target) {
         if(action == "block") {
             this.state = 8;
             this.blocker = source;
@@ -248,7 +288,7 @@ class Game {
         console.log("State 7 resolved");
     }
 
-    handle_state8(player,action,source,target) {
+    handle_state8(action,source,target) {
         if(action == "challange") {
             this.state = 9;
             this.challanger = source;
@@ -259,7 +299,7 @@ class Game {
         console.log("State 8 resolved");
     }
 
-    handle_state9(player,action,source,target) {
+    handle_state9(action,source,target) {
         // if(this.blocker.cards.includes(this.blocker_of_action(this.selected_action))) {
         if(valid_block()) {
             this.state = 12;
@@ -271,7 +311,7 @@ class Game {
         
     }
 
-    handle_state10(player,action,source,target) {
+    handle_state10(action,source,target) {
         // rozwiąż akcje 
         resolve_action();
 
@@ -279,12 +319,12 @@ class Game {
         console.log("State 10 resolved");
     }
 
-    handle_state11(player,action,source,target) {
+    handle_state11(action,source,target) {
         this.state = 14;
         console.log("State 11 resolved");
     }
 
-    handle_state12(player,action,source,target) {
+    handle_state12(action,source,target) {
         this.challanger.cards.splice(this.challanger.cards.indexOf(action),1);
 
         this.blocker.cards.splice(this.blocker.cards.indexOf(this.blocker_of_action(this.selected_action)),1);
@@ -295,16 +335,17 @@ class Game {
         console.log("State 12 resolved");
     }
 
-    handle_state13(player,action,source,target) {
+    handle_state13(action,source,target) {
         this.blocker.cards.splice(this.blocker.cards.indexOf(action),1);
 
         this.state = 10;
         console.log("State 13 resolved");
     }
 
-    handle_state14(player,action,source,target) {
+    handle_state14(action,source,target) {
 
         this.state = 1;
+        this.turn_owner = next_player_turn();
         console.log("State 14 resolved");
         console.log("End of turn");
     }
@@ -314,17 +355,62 @@ class Game {
     handle_action(player,action,source,target) {
         if(this.valid_action(player,action,source,target)) {
             let fn = "handle_state" + this.state;
-            this[fn](player,action,source,target);
+            this[fn](action,source,target);
             console.log("Successful action");
         }
         else {
             console.log("Invalid action");
         }
     }
+
+    get_line(query) {
+        return new Promise(res => {
+            rl.question(`Podaj ${query}: `,res);
+        })
+    }
+
+    player_of_handle(handle) {
+        if(handle == "")
+            return new Player("Wildcard");
+        for(var player of this.players) {
+            if(player.handle == handle)
+                return player;
+        }
+    }
+
+    async game_simulation() {
+        game.game_setup();
+        var running = true;
+        var line;
+        var action,source,target
+        console.log("Starting game state: ");
+        game.print_game_state();
+        while(running) {
+            line = await this.get_line("action");
+            if(line == "q" || line == "quit")
+                running = false;
+            else {
+                action = line.trim();
+                line = await this.get_line("source");
+                source = line.trim();
+                line = await this.get_line("target");
+                target = line.trim();
+                source = this.player_of_handle(source);
+                target = this.player_of_handle(target);
+
+                // console.log(`HAHAHA ${action} ${source} ${target}`);
+
+                this.handle_action("uniwersalny gracz majacy wladze nad ruchami kazdego zioma",action,source,target);
+            }
+            game.print_game_state();
+        }
+        rl.close();
+    }
 }
 
 var p1 = new Player("Jan"), p2 = new Player("CyprJan");
 var game = new Game(1,[p1, p2]);
-game.game_setup();
-game.print_game_state();
-game.handle_action(p1,"xd","xd","xd");
+// game.game_setup();
+// game.print_game_state();
+// game.handle_action(p1,"xd","xd","xd");
+game.game_simulation();
