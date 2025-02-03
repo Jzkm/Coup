@@ -1,0 +1,225 @@
+/* all */
+
+@import url('https://fonts.googleapis.com/css2?family=Source+Code+Pro&display=swap');
+
+body {
+    background-color: #2b2a2a;
+    font-family: 'Source Code Pro', monospace;
+    color: white;
+}
+
+button {
+    background-color: #3d3b3b;
+    border: 2px solid black;
+    font-family: 'Source Code Pro', monospace;
+    border-radius: 32px;
+    padding: 16px 32px;
+    font-size: 20px;
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+button:hover {
+    background-color: #595858;
+}
+
+/* index.ejs */
+
+.main-text {
+    color: white;
+    font-size: 64px;
+    text-align: center;
+}
+
+.button-container-index {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.button-index {
+    width: 100%;
+}
+
+button-index:hover {
+    background-color: #850505;
+}
+
+/* login.ejs, register.ejs, table.ejs, rules.ejs, profile.ejs */
+
+.container-login {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.button-login {
+    margin-top: 10%;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.login-form {
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 25px;
+    border: 2px solid black;
+    background-color: #3d3b3b;
+    border-radius: 32px;
+}
+
+.login-form label {
+    font-size: 24px;
+    color: white;
+    display: block;
+    text-align: center;
+    margin-bottom: 5px;
+}
+
+.login-form input {
+    width: 100%;
+    padding: 5px;
+    margin-bottom: 20px;
+    font-size: 24px;
+    border: 2px solid black;
+    border-radius: 32px;
+    box-sizing: border-box;
+}
+
+.login-form button {
+    width: 100%;
+    margin-top: 24px;
+    padding: 5px;
+    font-size: 24px;
+    background-color: #595858;
+    color: white;
+    border-radius: 32px;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.login-form button:hover {
+    background-color: #747373;
+} 
+
+/* profile.ejs */
+
+.button-profile {
+    margin-top: 5%;
+    box-sizing: border-box;
+    width: 100%;
+    width: 400px;
+    align-self: center;
+}
+
+.container-profile {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.profile-text {
+    display: flex;
+    flex-direction: column;
+    color: white;
+    font-size: 32px;
+    text-align: center;
+}
+
+/* rules.ejs */
+
+.container-rules {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.text {
+    color: white;
+    font-size: 32px;
+    text-align: center;
+}
+
+/* tables.ejs */
+
+.container-tables {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+.players-tables-container {
+    margin-top: 1%;
+    display: flex;
+    flex-direction: row;
+}
+
+.table-player {
+    border: 2px solid black;
+    width: 20%;
+    padding: 8px 8px;
+    border-radius: 32px;
+    font-size: 16px;
+}
+
+.table-tables {
+    text-align: center;
+    border-radius: 32px;
+    padding: 16px 16px;
+    border: 2px solid black;
+    background-color: #3d3b3b;
+}
+
+.header-tables {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: 10px;
+}
+
+.header-button {
+    flex: 1;
+    width: 300px;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+
+.tables-tables {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+/* 404.ejs */
+.fof {
+    color: #e74c3c;
+    font-size: 48px;
+    text-align: center;
+}

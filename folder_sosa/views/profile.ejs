@@ -1,0 +1,12 @@
+<div class="container-profile">
+    <div>
+        <span class="profile-text">Role: <%= role %></span>
+        <span class="profile-text">Username: <%= username %></span>
+    </div>
+    <form action="/profile" method="POST">
+        <button class="button-profile" type="submit">Log out</button>
+    </form>
+    <form action="/tables" method="GET">
+        <button class="button-profile" type="submit">Tables</button>
+    </form>
+</div>

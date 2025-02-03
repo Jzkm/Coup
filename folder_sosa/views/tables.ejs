@@ -1,0 +1,37 @@
+<div class="container-tables">
+    <div class="header-tables">
+        <form action="/tables" method="POST">
+            <button class="header-button" type="submit">New game table</button>
+        </form>
+        <form action="/rules" method="GET">
+            <button class="header-button" type="submit">Rules</button>
+        </form>
+        <form action="/profile" method="GET">
+            <button class="header-button" type="submit">Profile</button>
+        </form>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="script.js"></script>
+    <div id="tables-container" class="tables-tables">
+        <div class="tables-tables">
+            <%for(let i = 1; i <= 100; i++) {%>
+                <%if(!(tables[i - 1].nr === 0)){%>
+                    <div class = "table-tables">
+                        <form action="/table/<%=i%>" method="GET">
+                            <button class="button-index" type="submit">table #<%=i%></button>
+                        </form>
+                        <%for(let j = 1; j <= 2; j++) {%>
+                            <div class="players-tables-container">
+                                <%for(let k = 1; k <= 5; k++) {%>
+                                    <div class="table-player">
+                                        <%=tables[i - 1].players[(j - 1) * 5 + k - 1]%>
+                                    </div>
+                                <%}%>
+                            </div>
+                        <%}%>
+                    </div>
+                <%}%>
+            <%}%>
+        </div>
+    </div>
+</div>
