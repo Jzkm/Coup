@@ -408,9 +408,11 @@ class Game {
     }
 }
 
-var p1 = new Player("Jan"), p2 = new Player("CyprJan");
-var game = new Game(1,[p1, p2]);
+// var p1 = new Player("Jan"), p2 = new Player("CyprJan");
+// var game = new Game(1,[p1, p2]);
 // game.game_setup();
 // game.print_game_state();
 // game.handle_action(p1,"xd","xd","xd");
-game.game_simulation();
+// game.game_simulation();
+
+module.exports = {Player,Game};

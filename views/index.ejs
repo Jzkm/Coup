@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>player view</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/script2.js"></script>
     <style>
         body {
             background-color: #2b2a2a;
@@ -50,13 +52,12 @@
             color: green;
         }
     </style>
-    <script defer>
-        const socket = io();
+     <script defer>
 
-        socket.on('updateGame', (data) => {
+        socket.on('vis_update', (data) => {
             updatePlayerList(data);
-            updateGameLog(data);
-            updatePlayerHand(data);
+            // updateGameLog(data);
+            // updatePlayerHand(data);
         });
 
         function updatePlayerList(data) {
@@ -76,7 +77,7 @@
                 playerListContainer.appendChild(playerDiv);
             });
         }
-    </script>
+    </script> 
 </head>
 <body>
     <div class="player-list">
