@@ -81,13 +81,17 @@ for(let i = 1; i <= 100; i++) {
 
 function authorize(req, res, next) {
     // console.log('authorize');
-    if(!req.cookies.cookie || req.cookies.cookie.maxAge === -1) {
+    if((!req.cookies.cookie || req.cookies.cookie.maxAge === -1) && req.path != '/') {
         res.redirect('/');
     }
     else {
         next();
     }
 }
+
+app.use((req, res, next) => {
+    authorize(req, res, next);
+});
 
 function generateRandomString(length) {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -119,12 +123,12 @@ app.get('/', (req, res) => {
     }
 });
 
-app.get('/login', authorize, (req, res) => {
+app.get('/login', (req, res) => {
     // console.log('get /login');
     res.render('login');
 });
 
-app.post('/login', authorize, (req, res) => {
+app.post('/login', (req, res) => {
     // console.log('post /login');
     let username = req.body.username;
     let password = req.body.password;
@@ -138,12 +142,12 @@ app.post('/login', authorize, (req, res) => {
     }
 })
 
-app.get('/register', authorize, (req, res) => {
+app.get('/register', (req, res) => {
     // console.log('get /register');
     res.render('register');
 });
 
-app.post('/register', authorize, (req, res) => {
+app.post('/register', (req, res) => {
     // console.log('post /register');
     let username = req.body.username;
     let password = req.body.password;
@@ -160,13 +164,13 @@ app.post('/register', authorize, (req, res) => {
     }
 })
 
-app.get('/tables', authorize, (req, res) => {
+app.get('/tables', (req, res) => {
     // console.log('get /tables');
     io.emit('update', JSON.stringify(tables));
     res.render('tables', {tables:tables});
 });
 
-app.post('/tables', authorize, (req, res) => {
+app.post('/tables', (req, res) => {
     // console.log('post /tables');
     io.emit('update', JSON.stringify(tables));
     let sth = 0;
@@ -200,7 +204,7 @@ app.post('/tables', authorize, (req, res) => {
     }
 });
 
-app.get('/table/:id', authorize, (req, res) => {
+app.get('/table/:id', (req, res) => {
     // console.log(`get /table/${req.params.id}`);
     let tableId = req.params.id;
     // console.log(`im here: ${tableId}`);
@@ -225,22 +229,29 @@ app.get('/table/:id', authorize, (req, res) => {
     }
 });
 
-app.get('/rules', authorize, (req, res) => {
+app.get('/rules', (req, res) => {
     // console.log('get /rules');
     res.render('rules');
 });
 
-app.get('/profile', authorize, (req, res) => {
+app.get('/profile', (req, res) => {
     // console.log('get /profile');
     res.render('profile', {role:req.cookies.cookie.role, username:req.cookies.cookie.username});
 });
 
-app.post('/profile', authorize, (req, res) => {
+app.post('/profile', (req, res) => {
     // console.log('post /profile');
     anon_users.delete(req.cookies.cookie.username);
     res.cookie('cookie', {maxAge: -1});
     res.redirect('/');
 });
+
+
+
+module.exports = {app,io};
+var game_server = require('./game_server');
+
+game_server.main();
 
 app.use((req,res) => {
     // console.log('use /404');

@@ -6,6 +6,8 @@
     "http": "^0.0.1-security",
     "lodash": "^4.17.21",
     "socket": "^0.14.41",
-    "socket.io": "^4.8.1"
+    "socket.io": "^4.8.1",
+    "cookie-parser": "^1.4.7",
+    "express-ejs-layouts": "^2.5.1"
   }
 }

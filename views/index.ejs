@@ -1,90 +1,15 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>player view</title>
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="/script2.js"></script>
-    <style>
-        body {
-            background-color: #2b2a2a;
-            font-family: 'Source Code Pro', monospace;
-            color: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: stretch;
-            height: 100vh;
-            margin: 0;
-        }
-        
-        .player-list, .game-log, .player-hand {
-            padding: 5px;
-            border: 1px solid #ccc;
-        }
-        
-        .player-list {
-            width: 20%;
-        }
-        
-        .game-log {
-            width: 50%;
-        }
-        
-        .player-hand {
-            width: 20%;
-        }
+<div class="main-text">
+    Coup
+</div>
 
-        .player {
-            display: flex;
-            justify-content: space-between;
-            padding: 5px;
-            border-bottom: 1px solid #ddd;
-        }
-        
-        .eliminated {
-            text-decoration: line-through;
-            opacity: 0.5;
-        }
-        
-        .active {
-            color: green;
-        }
-    </style>
-     <script defer>
-
-        socket.on('vis_update', (data) => {
-            updatePlayerList(data);
-            // updateGameLog(data);
-            // updatePlayerHand(data);
-        });
-
-        function updatePlayerList(data) {
-            const playerListContainer = document.querySelector('.player-list');
-            playerListContainer.innerHTML = '<h3>Players</h3>';
-
-            data.game.players.forEach(player => {
-                let playerDiv = document.createElement('div');
-                playerDiv.classList.add('player');
-                if (player === data.game.turn_owner) {
-                    playerDiv.classList.add('active');
-                }
-                if (player.cards == 0) {
-                    playerDiv.classList.add('eliminated');
-                }
-                playerDiv.textContent = `${player.handle}: ${player.cards} cards, ${player.points} points`;
-                playerListContainer.appendChild(playerDiv);
-            });
-        }
-    </script> 
-</head>
-<body>
-    <div class="player-list">
-    </div>
-    <div class="game-log">
-    </div>
-    <div class="player-hand">
-    </div>
-</body>
-</html>
+<div class="button-container-index">
+    <form action="/login" method="GET">
+        <button class="button-index" type="submit">Log in</button>
+    </form>
+    <form action="/register" method="GET">
+        <button class="button-index" type="submit">Sign up</button>
+    </form>
+    <form action="/tables" method="GET">
+        <button class="button-index" type="submit">Guest</button>
+    </form>
+</div>
