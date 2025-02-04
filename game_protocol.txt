@@ -2,7 +2,7 @@ Stany albo oczekują wejścia od servera, albo jeden stan wywołuje od razu nast
 Dla każdego state'u gry wyszystkie możliwe wartości zmiennych:
 
     State 1:
-        action: "income", "foreign_aid", "coup", "exchange", "examine", "steal", "tax", "assassinate" 
+        action: "income", "foreign_aid", "coup", "exchange", "examine", "steal", "tax", "assassinate"
         target: *jeden z graczy* (klasa Player)
     State 2:
         action: "challange","no_challange"
@@ -16,18 +16,19 @@ Dla każdego state'u gry wyszystkie możliwe wartości zmiennych:
     State 6:
         action: "-", "pay_for_action"
     State 7:
-        action: "block","no_block"
+        action: "ambassador","inquisitor","contessa","captain","duke","assasin", "no_block"
         source: *jeden z graczy* (klasa Player)
     State 8:
         action: "challange,no_challange"
-        source: *jeden z graczy* (klasa Player)
     State 9:
         action: "show_card"
     State 10:
         action: "resolve_action"
+        action: "ambassador","inquisitor","contessa","captain","duke","assasin"
     State 11:
         action: "blocked"
     State 12:
+        action: "ambassador","inquisitor","contessa","captain","duke","assasin"
         action: "successful_block"
     State 13:
         action: "ambassador","inquisitor","contessa","captain","duke","assasin"

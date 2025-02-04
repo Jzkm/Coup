@@ -59,31 +59,39 @@ function main() {
     //     // res.render(visualization_post(game,handle));
     //     res.render(index);
     // });
+
+    var p1 = new logic.Player("Jan"), p2 = new logic.Player("CyprJan");
+    var game = new logic.Game(1,[p1, p2]);
+    game.game_setup();
+    // p1.coins = 9;
+    // game.discard = "assassin";
     
     io.on('connection', function(socket) {
         console.log('client connected:' + socket.id);
+        socket.on('ping', function(socket) {
+            var player = p1;
+            emit_game({game,player});
+        });
     
     });
+
        
     console.log( 'server listens' );
     
     
-    var p1 = new logic.Player("Jan"), p2 = new logic.Player("CyprJan");
-    var game = new logic.Game(1,[p1, p2]);
     
+    // function sleep(ms) {
+    //     return new Promise(resolve => setTimeout(resolve, ms));
+    // }
     
-    function sleep(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
+    // async function demo() {
+    //     console.log("Start");
+    //     // await sleep(5000); // Opóźnienie 2 sekundy
+    //     console.log("Po 5 sekundach");
+    //     // emit_game({game,p1});
+    // }
     
-    async function demo() {
-        console.log("Start");
-        await sleep(5000); // Opóźnienie 2 sekundy
-        console.log("Po 5 sekundach");
-        emit_game({game,p1});
-    }
-    
-    demo();
+    // demo();
 }
 main();
 

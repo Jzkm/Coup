@@ -20,6 +20,7 @@ app.use('/static', express.static('static'));
 app.use(express.static('static'));
 app.use(express.urlencoded({extended:true}));
 app.use(cookieParser('uTxss6zP2HWnC0Bd6rU7V6Ym4qjnBUCm7nbJqdPI4lbJkveKPAq9OsuKTJLzLoj7'));
+app.use('/instructors', express.static('./instructors'));
 
 app.disable('etag');
 app.set('layout', 'layout');

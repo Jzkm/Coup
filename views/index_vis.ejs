@@ -15,8 +15,8 @@
             display: flex;
             justify-content: space-between;
             align-items: stretch;
-            height: 100vh;
-            margin: 0;
+            height: 95vh;
+            margin: 2;
         }
         
         .player-list, .game-log, .player-hand {
@@ -29,7 +29,9 @@
         }
         
         .game-log {
-            width: 50%;
+            width: 55%;
+            align-items: center;
+            text-align: center;
         }
         
         .player-hand {
@@ -53,28 +55,430 @@
         }
     </style>
      <script defer>
+        var coup_to_uwr = {
+            "ambassador": "wzych",
+            "contessa": "jmi",
+            "captain": "pwo",
+            "duke": "lpi",
+            "assassin": "jma"
+        };
 
         socket.on('vis_update', (data) => {
             updatePlayerList(data);
-            // updateGameLog(data);
-            // updatePlayerHand(data);
+            updateGameLog(data);
+            updatePlayerHand(data);
         });
 
         function updatePlayerList(data) {
             const playerListContainer = document.querySelector('.player-list');
             playerListContainer.innerHTML = '<h3>Players</h3>';
-
             data.game.players.forEach(player => {
                 let playerDiv = document.createElement('div');
                 playerDiv.classList.add('player');
-                if (player === data.game.turn_owner) {
+                if (player.handle == data.game.turn_owner.handle) {
                     playerDiv.classList.add('active');
                 }
                 if (player.cards == 0) {
                     playerDiv.classList.add('eliminated');
                 }
-                playerDiv.textContent = `${player.handle}: ${player.cards} cards, ${player.points} points`;
+                let handleLine = document.createElement('div');
+                handleLine.textContent = player.handle;
+                let statsLine = document.createElement('div');
+                statsLine.textContent = `${player.cards.length} ${player.cards.length === 1 ? 'card' : 'cards'}, ${player.coins} points`;
+                playerDiv.appendChild(handleLine);
+                playerDiv.appendChild(statsLine);
                 playerListContainer.appendChild(playerDiv);
+            });
+            if (data.game.discard != "") {
+                let lastDiscardedHeader = document.createElement('h3');
+                lastDiscardedHeader.textContent = `Last discarded card:`;
+                playerListContainer.appendChild(lastDiscardedHeader);
+                let cardImg = document.createElement('img');
+                cardImg.src = `/instructors/${coup_to_uwr[data.game.discard]}.png`;
+                cardImg.style.margin = '5px';
+                playerListContainer.appendChild(cardImg);
+            }
+        }
+
+        function updateGameLog(data) {
+            const gameLogContainer = document.querySelector('.game-log');
+            gameLogContainer.innerHTML = '';
+
+            if (data.game.state == 1) {
+                if (data.game.turn_owner.handle != data.player.handle) {
+                    let otherSelectingHeader = document.createElement('h3');
+                    otherSelectingHeader.textContent = `${data.game.turn_owner.handle} is selecting their move.`;
+                    gameLogContainer.appendChild(targetSelectionHeader);
+                    return;
+                }
+
+                let table = document.createElement('table');
+                table.style.width = "100%";
+                table.style.border = "2px";
+
+                let actionTable = [
+                    ["instructor", "purple", "action", "none", "Action description", "blocked by", "purple", "purple"],
+                    ["-", "grey",  "code task", "income", "Get 1 point.", "X", "grey", "grey"],
+                    ["-", "grey",  "code task functionally", "foreign_aid", "Get 2 points.", "LPI", "red", "red"],
+                    ["-", "grey",  "refute proof", "coup", "Spend 7 point to make another player lose favor (required on 10+ points).", "X", "grey", "grey"],
+                    ["WZYCH", "yellow",  "change project ", "exchange", "Draw 2 instructors then put any 2 instructors back in the deck.", "challenge", "grey", "grey"],
+                    ["JMI", "green",  "-", "none", "Block shrooming.", "challenge", "grey", "grey"],
+                    ["PWO", "#0356fc",  "quiz student", "steal", "Take 2 points from another player (for yourself).", "PWO | WZYCH", "#0356fc", "yellow"],
+                    ["JPI", "red",  "code task during workshop", "tax", "Get 3 points.", "challenge", "grey", "grey"],
+                    ["JMA", "#222222",  "shroom proof", "assassinate", "Spent 3 points to make another loose favor.", "JMA", "green", "green"]
+                ];
+
+                actionTable.forEach(entry => {
+                    let row = document.createElement('tr');
+
+                    let col1 = document.createElement('td');
+                    col1.textContent = entry[0];
+                    col1.style.width = "11%";
+                    col1.style.backgroundColor = entry[1];
+                    col1.style.padding = "10px";
+                    col1.style.textAlign = "center";
+                    col1.style.color = "black";
+                    row.appendChild(col1);
+
+                    let col2 = document.createElement('td');
+                    col2.style.width = "11%";
+                    col2.style.textAlign = "center";
+                    let button = document.createElement('button');
+                    button.textContent = entry[2];
+                    button.style.margin = "5px";
+                    button.style.padding = "5px";
+                    button.style.width  = "100%";
+                    button.style.height  = "100%";
+                    let working_button = true;
+                    if (entry[3] == "none") {
+                        working_button = false;
+                    }
+                    if (entry[3] == "assassinate" && data.player.coins < 3) {
+                        working_button = false;
+                    }
+                    if (entry[3] == "coup" && data.player.coins < 7) {
+                        working_button = false;
+                    }
+                    if (data.player.coins >= 10 && entry[3] != "coup") {
+                        working_button = false;
+                    }
+                    if (working_button) {
+                        let action = entry[3];
+                        button.addEventListener("click", () => {
+                            // console.log("click");
+                            if (action == "coup" || action == "assassinate") {
+                                data.game.action = action;
+                                data.game.state = 15;
+                                updateGameLog(data);
+                            }
+                            else {
+                                socket.emit('action_taken', {action});
+                            }
+                        });
+                    }
+                    col2.appendChild(button);
+                    row.appendChild(col2);
+
+                    let col3 = document.createElement('td');
+                    col3.textContent = entry[4];
+                    col3.style.width = "47%";
+                    col3.style.padding = "10px";
+                    row.appendChild(col3);
+
+                    let col4 = document.createElement('td');
+                    col4.textContent = entry[5];
+                    col4.style.width = "31%";
+                    col4.style = `background: linear-gradient(to right, ${entry[6]}, ${entry[7]})`;
+                    col4.style.padding = "5px";
+                    col4.style.textAlign = "center";
+                    col4.style.color = "black";
+                    row.appendChild(col4);
+
+                    table.appendChild(row);
+                });
+                gameLogContainer.appendChild(table);
+            } else if (data.game.state == 15) {
+                let targetSelectionHeader = document.createElement('h3');
+                targetSelectionHeader.textContent = `Choose target:`;
+                gameLogContainer.appendChild(targetSelectionHeader);
+                data.game.players.forEach(player => {
+                    if (player.handle != data.player.handle) {
+                        const button = document.createElement('button');
+                        button.textContent = player.handle;
+                        button.addEventListener('click', () => {
+                            let action = data.game.action;
+                            let target = player.handle;
+                            socket.emit('action_taken', {action, target});
+                        });
+                        gameLogContainer.appendChild(button);
+                    }
+                });
+            } else if (data.game.state == 2) {
+                if (data.game.turn_owner.handle == data.player.handle) {
+                    let challengersHeader = document.createElement('h3');
+                    challengersHeader.textContent = `waiting for possible challenges`;
+                    gameLogContainer.appendChild(challengersHeader);
+                    return;
+                }
+                let challengeHeader = document.createElement('h3');
+                challengeHeader.textContent = `${data.game.turn_owner} has declared ${data.game.selected_action}` + 
+                (data.game.target != "" ? ` against ${data.game.target}` : "");
+                gameLogContainer.appendChild(challengeHeader);
+
+                const button1 = document.createElement('button');
+                button1.textContent = "challenge";
+                button1.addEventListener('click', () => {
+                    let action = "challenge";
+                    let source = data.player;
+                    socket.emit('action_taken', {action, source});
+                });
+                gameLogContainer.appendChild(button1);
+
+                const button2 = document.createElement('button');
+                button2.textContent = "no challenge";
+                button2.addEventListener('click', () => {
+                    let action = "no_challenge";
+                    socket.emit('action_taken', {action});
+                });
+                gameLogContainer.appendChild(button2);
+            } else if (data.game.state == 3) {
+                consele.log("it seems we got lost");
+            } else if (data.game.state == 4) {
+                if (data.game.turn_owner.handle != data.player.handle) {
+                    let infoHeader = document.createElement('h3');
+                    infoHeader.textContent = `${data.game.turn_owner} has lost the challenge! They shall lose favor.`;
+                    gameLogContainer.appendChild(infoHeader);
+                    return;
+                }
+                let infoHeader = document.createElement('h3');
+                infoHeader.textContent = `You lost the challenge! You must discard a professor!`;
+                gameLogContainer.appendChild(infoHeader);
+
+                data.player.cards.forEach(card => {
+                    const button = document.createElement('button');
+                    let cardImg = document.createElement('img');
+                    cardImg.src = `/instructors/${coup_to_uwr[card]}.png`;
+                    button.appendChild(cardImg);
+                    button.addEventListener('click', () => {
+                        let action = card;
+                        socket.emit('action_taken', {action});
+                    });
+                    gameLogContainer.appendChild(button);
+                });
+            } else if (data.game.state == 5) {
+                if (data.game.challenger != data.player.handle) {
+                    let infoHeader = document.createElement('h3');
+                    infoHeader.textContent = `${data.game.challenger} has challenged wrogly! They shall lose favor.`;
+                    gameLogContainer.appendChild(infoHeader);
+                    return;
+                }
+                let infoHeader = document.createElement('h3');
+                infoHeader.textContent = `You lost challenged wrongly! You must discard a professor!`;
+                gameLogContainer.appendChild(infoHeader);
+
+                data.player.cards.forEach(card => {
+                    const button = document.createElement('button');
+                    let cardImg = document.createElement('img');
+                    cardImg.src = `/instructors/${coup_to_uwr[card]}.png`;
+                    button.appendChild(cardImg);
+                    button.addEventListener('click', () => {
+                        let action = card;
+                        socket.emit('action_taken', {action});
+                    });
+                    gameLogContainer.appendChild(button);
+                });
+            } else if (data.game.state == 7) {
+                if (data.game.turn_owner.handle == data.player.handle) {
+                    let challengersHeader = document.createElement('h3');
+                    challengersHeader.textContent = `waiting for possible blocks`;
+                    gameLogContainer.appendChild(challengersHeader);
+                    return;
+                }
+                let challengeHeader = document.createElement('h3');
+                challengeHeader.textContent = `${data.game.turn_owner} has declared ${data.game.selected_action}` + 
+                (data.game.target != "" ? ` against ${data.game.target}` : "");
+                gameLogContainer.appendChild(challengeHeader);
+
+                let blocker_list = [];
+                if (data.game.selected_action == "foreign_aid") {
+                    blocker_list.push("duke");
+                }
+                if (data.game.selected_action == "steal") {
+                    blocker_list.push("captain");
+                    blocker_list.push("ambassador");
+                }
+                if (data.game.selected_action == "assassinate") {
+                    blocker_list.push("contessa");
+                }
+
+                if (blocker_list != []) {
+                    let blockHeader = document.createElement('h3');
+                    blockHeader.textContent = `Do you wish to block them? Requires:`;
+                    gameLogContainer.appendChild(blockHeader);
+
+                    blocker_list.forEach(card => {
+                        const button = document.createElement('button');
+                        let cardImg = document.createElement('img');
+                        cardImg.src = `/instructors/${coup_to_uwr[card]}.png`;
+                        button.appendChild(cardImg);
+                        button.addEventListener('click', () => {
+                            let action = card;
+                            let source = game.player;
+                            socket.emit('action_taken', {action, source});
+                        });
+                        gameLogContainer.appendChild(button);
+                    });
+
+                    let noHeader = document.createElement('h3');
+                    noHeader.textContent = `If you don't wish to block use:`;
+                    gameLogContainer.appendChild(noHeader);
+
+                    const button_no = document.createElement('button');
+                    button_no.textContent = "no block";
+
+                    button_no.addEventListener('click', () => {
+                        let action = "no block";
+                        socket.emit('action_taken', {action});
+                    });
+                    gameLogContainer.appendChild(button_no);
+                }
+            } else if (data.game.state == 8) {
+                if (data.game.blocker.handle == data.player.handle) {
+                    let infoHeader = document.createElement('h3');
+                    infoHeader.textContent = `waiting for possible challenge of your block`;
+                    gameLogContainer.appendChild(infoHeader);
+                    return;
+                }
+                if (data.game.turn_owner.handle != data.player.handle) {
+                    let infoHeader = document.createElement('h3');
+                    infoHeader.textContent = `${data.game.turn_owner.handle}'s action has been blocked by ${data.game.blocker.handle} with ${data.game.blocking_with}.`;
+                    gameLogContainer.appendChild(infoHeader);
+                    let infoHeader2 = document.createElement('h3');
+                    infoHeader2.textContent = `Awaiting possible challenge.`;
+                    gameLogContainer.appendChild(infoHeader2);
+                    return;
+                }
+                let infoHeader = document.createElement('h3');
+                infoHeader.textContent = `Your action has been blocked by ${data.game.blocker.handle} with ${data.game.blocking_with}.`;
+                gameLogContainer.appendChild(infoHeader);
+
+                let infoHeader2 = document.createElement('h3');
+                infoHeader2.textContent = `You may issue a challenge:`;
+                gameLogContainer.appendChild(infoHeader2);
+
+                const button1 = document.createElement('button');
+                button1.textContent = "challenge";
+                button1.addEventListener('click', () => {
+                    let action = "challenge";
+                    socket.emit('action_taken', {action});
+                });
+                gameLogContainer.appendChild(button1);
+
+                const button2 = document.createElement('button');
+                button2.textContent = "no challenge";
+                button2.addEventListener('click', () => {
+                    let action = "no_challenge";
+                    socket.emit('action_taken', {action});
+                });
+                gameLogContainer.appendChild(button2);
+            } else if (data.game.state == 9) {
+                consele.log("it seems we got lost");
+            } else if (data.game.state == 10) {
+                let infoHeader = document.createElement('h3');
+                infoHeader.textContent = `Action resolving.`;
+                gameLogContainer.appendChild(infoHeader);
+
+                if (data.game.action != "assassinate" && data.game.action != "coup") {
+                    return;
+                }
+
+                let infoHeader2 = document.createElement('h3');
+                if (data.game.target.handle == data.player) {
+                    infoHeader2.textContent = `You must discard a profesor.`;
+                } else {
+                    infoHeader2.textContent = `${data.game.targer.handle} must discard a profesor.`;
+                }
+                gameLogContainer.appendChild(infoHeader2);
+
+                if (data.game.target.handle == data.player) {
+                    data.player.cards.forEach(card => {
+                        const button = document.createElement('button');
+                        let cardImg = document.createElement('img');
+                        cardImg.src = `/instructors/${coup_to_uwr[card]}.png`;
+                        button.appendChild(cardImg);
+                        button.addEventListener('click', () => {
+                            let action = card;
+                            socket.emit('action_taken', {action});
+                        });
+                        gameLogContainer.appendChild(button);
+                    });
+                }
+            } else if (data.game.state == 11) {
+                consele.log("it seems we got lost");
+            } else if (data.game.state == 12) {
+                if (data.game.blocker != data.player.handle) {
+                    let infoHeader = document.createElement('h3');
+                    infoHeader.textContent = `${data.game.blocker}'s block was a fake! They shall lose favor.`;
+                    gameLogContainer.appendChild(infoHeader);
+                    return;
+                }
+                let infoHeader = document.createElement('h3');
+                infoHeader.textContent = `Your block was found to be a fake! You must discard a professor!`;
+                gameLogContainer.appendChild(infoHeader);
+
+                data.player.cards.forEach(card => {
+                    const button = document.createElement('button');
+                    let cardImg = document.createElement('img');
+                    cardImg.src = `/instructors/${coup_to_uwr[card]}.png`;
+                    button.appendChild(cardImg);
+                    button.addEventListener('click', () => {
+                        let action = card;
+                        socket.emit('action_taken', {action});
+                    });
+                    gameLogContainer.appendChild(button);
+                });
+            } else if (data.game.state == 13) {
+                if (data.game.turn_owner.handle != data.player.handle) {
+                    let infoHeader = document.createElement('h3');
+                    infoHeader.textContent = `${data.game.turn_owner} has challenged the block wrongly! They shall lose favor.`;
+                    gameLogContainer.appendChild(infoHeader);
+                    return;
+                }
+                let infoHeader = document.createElement('h3');
+                infoHeader.textContent = `You have challenged the block wrongly! You must discard a professor!`;
+                gameLogContainer.appendChild(infoHeader);
+
+                data.player.cards.forEach(card => {
+                    const button = document.createElement('button');
+                    let cardImg = document.createElement('img');
+                    cardImg.src = `/instructors/${coup_to_uwr[card]}.png`;
+                    button.appendChild(cardImg);
+                    button.addEventListener('click', () => {
+                        let action = card;
+                        socket.emit('action_taken', {action});
+                    });
+                    gameLogContainer.appendChild(button);
+                });
+            }
+        }
+
+        function updatePlayerHand(data) {
+            const playerHandContainer = document.querySelector('.player-hand');
+            playerHandContainer.innerHTML = '';
+            let pointsHeader = document.createElement('h3');
+            pointsHeader.textContent = `Your points:`;
+            playerHandContainer.appendChild(pointsHeader);
+            let pointsNumber = document.createElement('div');
+            pointsNumber.textContent = `${data.player.coins}`;
+            playerHandContainer.appendChild(pointsNumber);
+            let cardsHeader = document.createElement('h3');
+            cardsHeader.textContent = 'Your cards:';
+            playerHandContainer.appendChild(cardsHeader);
+            data.player.cards.forEach(card => {
+                let cardImg = document.createElement('img');
+                cardImg.src = `/instructors/${coup_to_uwr[card]}.png`;
+                cardImg.style.margin = '5px';
+                playerHandContainer.appendChild(cardImg);
             });
         }
     </script> 
@@ -83,6 +487,16 @@
     <div class="player-list">
     </div>
     <div class="game-log">
+        <button id=ping></button>
+        <script>
+            function emit_ping(data) {
+                socket.emit('ping',data);
+            }
+            const przycisk = document.getElementById("ping");
+            przycisk.onclick = () => {
+                emit_ping("");
+            };
+        </script>
     </div>
     <div class="player-hand">
     </div>

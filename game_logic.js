@@ -25,7 +25,7 @@ const rl = readline.createInterface({
   output: process.stdout
 });
 
-var characters = ["ambassador","inquisitor","contessa","captain","duke","assasin"];
+var characters = ["ambassador","contessa","captain","duke","assassin"];
 var actions = ["income", "foreign_aid", "coup", "exchange", "examine", "steal", "tax", "assassinate"];
 
 // UWAGA: Gracz jest nie tym samym co użytnownik strony
@@ -48,13 +48,14 @@ class Game {
     game_id = 0;
     players = []; //intancja klasy Player
     deck = []; //tablica kart, których nikt nie ma (kolejność MA znaczenie!)
-    discard = []; //tablica kart, które zostały odrzucone przez graczy
+    discard = ""; //tablica kart, które zostały odrzucone przez graczy
     turn_owner = new Player("Wildcard"); //tura którego gracza, wartoscia jest instancja klasy Player
     state = 1; //typ (z grafu), który jest aktualnie
     selected_action = "";
     target = ""; // gracz którego dotyczy akcja (nie wszystkie akcje kogoś dotyczą!)
-    challanger = ""; //gracz który zchallengował
+    challenger = ""; //gracz który zchallengował
     blocker = ""; //gracz który zblokował
+    blocking_with = "";
 
     constructor(game_id,players) {
         this.game_id = game_id;
@@ -87,7 +88,7 @@ class Game {
         console.log("Turn of player: " + this.turn_owner);
         console.log("Selected action: " + this.selected_action);
         console.log("Target: " + this.target);
-        console.log("Challanger: " + this.challanger);
+        console.log("Challenger: " + this.challenger);
         console.log("Blocker: " + this.blocker);
         console.log("Player's items (name,coins,cards):");
         for(let player of this.players) {
@@ -224,16 +225,16 @@ class Game {
         else {
             this.target = "";
         }
-        this.challanger = "";
+        this.challenger = "";
 
         this.state = 2;
         console.log("State 1 resolved");
     }
 
     handle_state2(action,source,target) {
-        if(action == "challange") {
+        if(action == "challenge") {
             this.state = 3;
-            this.challanger = source;
+            this.challenger = source;
         }
         else {
             this.state = 6;
@@ -259,7 +260,7 @@ class Game {
     }
 
     handle_state5(action,source,target) {
-        this.challanger.cards.splice(this.challanger.cards.indexOf(action),1);
+        this.challenger.cards.splice(this.challenger.cards.indexOf(action),1);
 
         this.turn_owner.cards.splice(this.turn_owner.cards.indexOf(this.character_of_action(this.selected_action)),1);
         this.put_card_in_deck(this.character_of_action(this.selected_action));
@@ -289,9 +290,9 @@ class Game {
     }
 
     handle_state8(action,source,target) {
-        if(action == "challange") {
+        if(action == "challenge") {
             this.state = 9;
-            this.challanger = source;
+            this.challenger = source;
         }
         else {
             this.state = 11;
@@ -325,7 +326,7 @@ class Game {
     }
 
     handle_state12(action,source,target) {
-        this.challanger.cards.splice(this.challanger.cards.indexOf(action),1);
+        this.challenger.cards.splice(this.challenger.cards.indexOf(action),1);
 
         this.blocker.cards.splice(this.blocker.cards.indexOf(this.blocker_of_action(this.selected_action)),1);
         this.put_card_in_deck(this.blocker_of_action(this.selected_action));
