@@ -34,7 +34,6 @@ class Player {
     handle = "";
     coins = 0;
     cards = [];
-    cookie = "";
 
     constructor(handle) {
         this.handle = handle;

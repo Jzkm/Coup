@@ -69,10 +69,10 @@ io.on('connection', function(socket) {
 
     const cookies = cookie.parse(socket.handshake.headers.cookie || '');
     console.log('Cookies:', cookies);
-    socket.on('ping', function(socket) {
-        var player = p1;
-        emit_game({game,player});
-    });
+    // socket.on('ping', function(socket) {
+    //     var player = p1;
+    //     emit_game({game,player});
+    // });
 
     socket.on('action_taken', function(data) {
         action = data.action;
@@ -87,6 +87,7 @@ io.on('connection', function(socket) {
         let table_id = data.table_id;
         // socket.broadcast.emit("redirect",{});
         // socket.emit("redirect",{});
+        let players = [];
         console.log("Iteruje sie po ciastakach:");
         io.sockets.sockets.forEach((clientsocket) => {
             let username = cookie.parse(clientsocket.handshake.headers.cookie);
@@ -98,8 +99,11 @@ io.on('connection', function(socket) {
             if(server.tables[table_id - 1].players.includes(username)) {
                 console.log(`Robie redirect dla uzytkownika o ciasteczku ${cookies.username}`);
                 clientsocket.emit("redirect",{});
+                players.push(new logic.Player(username));
             }
         });
+        let game = new logic.Game(table_id,players);
+        games.table_id = game;
     });
 });
 
