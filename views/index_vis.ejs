@@ -331,7 +331,7 @@
                         button.addEventListener('click', () => {
                             let action = card;
                             let source = data.player;
-                            socket.emit('action_taken', {action, source});
+                            socket.emit('block', {action, source});
                         });
                         gameLogContainer.appendChild(button);
                     });
@@ -344,8 +344,8 @@
                     button_no.textContent = "no block";
 
                     button_no.addEventListener('click', () => {
-                        let action = "no block";
-                        socket.emit('action_taken', {action});
+                        let action = "no_block";
+                        socket.emit('block', {action});
                     });
                     gameLogContainer.appendChild(button_no);
                 }

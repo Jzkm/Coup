@@ -9,6 +9,7 @@ var table_of_user = {};
 var player_of_user = {};
 var users_sitting_in_tables = {};
 var challenge_counter = {};
+var block_counter = {};
 // var game_of_user
 //mapuje username na id_stołu
 
@@ -130,7 +131,6 @@ io.on('connection', function(socket) {
     });
 
     socket.on('challenge', function(data) {
-        let cou
         let username = cookie.parse(socket.handshake.headers.cookie);
         username = JSON.parse(username.cookie.slice(2)).username;
         let player = player_of_user[username]
@@ -153,6 +153,35 @@ io.on('connection', function(socket) {
             if(challenge_counter[table_id] == game.players.length - 1) {
                 challenge_counter[table_id] = 0;
                 game.handle_action(player,"no_challenge",source,target);
+
+                send_game(game,table_id);
+            }
+        }
+    });
+
+    socket.on('block', function(data) {
+        let username = cookie.parse(socket.handshake.headers.cookie);
+        username = JSON.parse(username.cookie.slice(2)).username;
+        let player = player_of_user[username]
+        let table_id = table_of_user[username];
+        let game = games[table_id];
+        action = data.action;
+        source = data.source;
+        target = data.target;
+
+        if(action != "no_block") {
+            game.handle_action(player,action,source,target);
+
+            send_game(game,table_id);
+        }
+        else {
+            if(!(table_id in block_counter)) {
+                block_counter[table_id] = 0;
+            }
+            block_counter[table_id]++;
+            if(block_counter[table_id] == game.players.length - 1) {
+                block_counter[table_id] = 0;
+                game.handle_action(player,"no_block",source,target);
 
                 send_game(game,table_id);
             }
