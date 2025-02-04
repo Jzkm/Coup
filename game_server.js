@@ -40,7 +40,8 @@ app.get("/Coup/:game_id", (req, res) => {
         }
     }
     else {
-        res.render('404');
+        res.render('table_queue');
+        // res.render('404');
     }
 });
 
@@ -79,8 +80,8 @@ io.on('connection', function(socket) {
     });
 });
 
-// var p1 = new logic.Player("Jan"), p2 = new logic.Player("CyprJan");
-// var game = new logic.Game(1,[p1, p2]);
-// game.game_setup();
+var p1 = new logic.Player("Jan"), p2 = new logic.Player("CyprJan");
+var game = new logic.Game(1,[p1, p2]);
+game.game_setup();
 
 
