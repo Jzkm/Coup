@@ -56,6 +56,8 @@ class Game {
     challenger = ""; //gracz który zchallengował
     blocker = ""; //gracz który zblokował
     blocking_with = "";
+    players_alive = 0;
+    winner = "";
 
     constructor(game_id,players) {
         this.game_id = game_id;
@@ -70,10 +72,12 @@ class Game {
                 this.deck.push(character);
         }
         this.deck = lodash.shuffle(this.deck);
+        this.winner = "";
 
         this.discard = [];
         this.turn_owner = this.players[0];
         this.state = 1;
+        this.players_alive = this.players.length;
 
         for(let player of this.players) {
             player.coins = 8;
@@ -148,13 +152,30 @@ class Game {
     }
 
     valid_action(player,action,source,target) {
-        return true;
+        let ct = 0;
+        for(let plr of this.players) {
+            if(plr.cards.length > 0) {
+                ct++;
+            }
+        }
+        this.players_alive = ct;
+        return player.cards.length > 0;
+    }
+
+    is_end(player,action,source,target) {
+        let ct = 0;
+        for(let plr of this.players) {
+            if(plr.cards.length > 0) {
+                ct++;
+            }
+        }
+        return ct == 1;
     }
 
     next_player_turn() {
         var idx = 0;
         while(idx < this.players.length) {
-            if(this.players[idx].handle == this.turn_owner)
+            if(this.players[idx].handle == this.turn_owner.handle)
                 break;
                 
             idx++;
@@ -197,7 +218,8 @@ class Game {
         }
         else if(this.selected_action == "assassinate") {
             this.discard = action;
-            this.target.cards.splice(this.target.cards.indexOf(action),1);
+            if(this.target.cards.length > 0)
+                this.target.cards.splice(this.target.cards.indexOf(action),1);
             console.log("assasinate");
         }
         else if(this.selected_action == "income") {
@@ -330,6 +352,7 @@ class Game {
         }
         else {
             this.state = 10;
+
             this.handle_action(player,"resolve_action","","");
         }
         console.log("State 7 resolved");
@@ -369,8 +392,12 @@ class Game {
             this.turn_owner.cards.push(card1);
             this.turn_owner.cards.push(card2);
         }
-
+        else if(this.selected_action == "assassinate" && this.target.cards.length == 0) {
+            this.state = 14;
+            this.handle_action(player,"failed","","");
+        }
         this.state = 14;
+        
         console.log("State 10 resolved");
     }
 
@@ -407,6 +434,7 @@ class Game {
             this.resolve_action(action);
         }
 
+
         this.state = 1;
         this.turn_owner = this.next_player_turn();
         console.log("State 14 resolved");
@@ -416,7 +444,15 @@ class Game {
     
 
     handle_action(player,action,source,target) {
-        if(this.valid_action(player,action,source,target)) {
+        if(this.is_end(player,action,source,target)) {
+            console.log("NIe powinno mnie tu być!");
+            for(let plr of this.players) {
+                if(plr.cards.length > 0) {
+                    this.winner = plr;
+                }
+            }
+        }
+        else if(this.valid_action(player,action,source,target)) {
             let fn = "handle_state" + this.state;
             this[fn](player,action,source,target);
             console.log("Successful action");
@@ -441,34 +477,34 @@ class Game {
         }
     }
 
-    async game_simulation() {
-        game.game_setup();
-        var running = true;
-        var line;
-        var action,source,target
-        console.log("Starting game state: ");
-        game.print_game_state();
-        while(running) {
-            line = await this.get_line("action");
-            if(line == "q" || line == "quit")
-                running = false;
-            else {
-                action = line.trim();
-                line = await this.get_line("source");
-                source = line.trim();
-                line = await this.get_line("target");
-                target = line.trim();
-                source = this.player_of_handle(source);
-                target = this.player_of_handle(target);
+    // async game_simulation() {
+    //     game.game_setup();
+    //     var running = true;
+    //     var line;
+    //     var action,source,target
+    //     console.log("Starting game state: ");
+    //     game.print_game_state();
+    //     while(running) {
+    //         line = await this.get_line("action");
+    //         if(line == "q" || line == "quit")
+    //             running = false;
+    //         else {
+    //             action = line.trim();
+    //             line = await this.get_line("source");
+    //             source = line.trim();
+    //             line = await this.get_line("target");
+    //             target = line.trim();
+    //             source = this.player_of_handle(source);
+    //             target = this.player_of_handle(target);
 
-                // console.log(`HAHAHA ${action} ${source} ${target}`);
+    //             // console.log(`HAHAHA ${action} ${source} ${target}`);
 
-                this.handle_action("uniwersalny gracz majacy wladze nad ruchami kazdego zioma",action,source,target);
-            }
-            game.print_game_state();
-        }
-        rl.close();
-    }
+    //             this.handle_action("uniwersalny gracz majacy wladze nad ruchami kazdego zioma",action,source,target);
+    //         }
+    //         game.print_game_state();
+    //     }
+    //     rl.close();
+    // }
 }
 
 // var p1 = new Player("Jan"), p2 = new Player("CyprJan");

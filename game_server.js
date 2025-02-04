@@ -150,7 +150,7 @@ io.on('connection', function(socket) {
                 challenge_counter[table_id] = 0;
             }
             challenge_counter[table_id]++;
-            if(challenge_counter[table_id] == game.players.length - 1) {
+            if(challenge_counter[table_id] == game.players_alive - 1) {
                 challenge_counter[table_id] = 0;
                 game.handle_action(player,"no_challenge",source,target);
 
@@ -179,7 +179,7 @@ io.on('connection', function(socket) {
                 block_counter[table_id] = 0;
             }
             block_counter[table_id]++;
-            if(block_counter[table_id] == game.players.length - 1) {
+            if(block_counter[table_id] == game.players_alive - 1) {
                 block_counter[table_id] = 0;
                 game.handle_action(player,"no_block",source,target);
 
