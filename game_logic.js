@@ -206,6 +206,7 @@ class Game {
             console.log("steal");
         }
         else if(this.selected_action == "tax") {
+            this.turn_owner.coins += 3;
             console.log("tax");
         }
         else {
@@ -242,10 +243,16 @@ class Game {
     handle_state2(player,action,source,target) {
         if(action == "challenge") {
             this.state = 3;
-            this.challenger = source;
+            for(var plr of this.players) {
+                if(plr.handle == source.handle) {
+                    this.challenger = plr;
+                }
+            }
+            this.handle_action(player,"show_card","","");
         }
         else {
             this.state = 6;
+            this.handle_action(player,"pay_for_action","","");
         }
         console.log("State 2 resolved");
     }
@@ -262,19 +269,22 @@ class Game {
 
     handle_state4(player,action,source,target) {
         this.turn_owner.cards.splice(this.turn_owner.cards.indexOf(action),1);
-
+        this.discard = action;
         this.state = 14;
         console.log("State 4 resolved");
+        this.handle_action(player,"failed","","");
     }
 
     handle_state5(player,action,source,target) {
         this.challenger.cards.splice(this.challenger.cards.indexOf(action),1);
+        this.discard = action;
 
         this.turn_owner.cards.splice(this.turn_owner.cards.indexOf(this.character_of_action(this.selected_action)),1);
         this.put_card_in_deck(this.character_of_action(this.selected_action));
         this.turn_owner.cards.push(this.draw_card_from_deck());
 
         this.state = 6;
+        this.handle_action(player,"pay_for_action","","");
         console.log("State 5 resolved");
     }
 
@@ -294,12 +304,18 @@ class Game {
     }
 
     handle_state7(player,action,source,target) {
-        if(action == "block") {
+        if(action != "no_block") {
+            console.log(source);
             this.state = 8;
-            this.blocker = source;
+            for(var plr of this.players) {
+                if(plr.handle == source.handle) {
+                    this.blocker = plr;
+                }
+            }
         }
         else {
             this.state = 10;
+            this.handle_action(player,"resolve_action","","");
         }
         console.log("State 7 resolved");
     }
@@ -341,6 +357,7 @@ class Game {
 
     handle_state12(player,action,source,target) {
         this.challenger.cards.splice(this.challenger.cards.indexOf(action),1);
+        this.discard = action;
 
         this.blocker.cards.splice(this.blocker.cards.indexOf(this.blocker_of_action(this.selected_action)),1);
         this.put_card_in_deck(this.blocker_of_action(this.selected_action));
@@ -352,6 +369,7 @@ class Game {
 
     handle_state13(player,action,source,target) {
         this.blocker.cards.splice(this.blocker.cards.indexOf(action),1);
+        this.discard = action;
 
         this.state = 10;
         console.log("State 13 resolved");
@@ -359,7 +377,9 @@ class Game {
 
     handle_state14(player,action,source,target) {
 
-        this.resolve_action(action);
+        if (action != "failed") {
+            this.resolve_action(action);
+        }
 
         this.state = 1;
         this.turn_owner = this.next_player_turn();

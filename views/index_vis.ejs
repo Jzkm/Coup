@@ -223,7 +223,7 @@
                 }
                 let challengeHeader = document.createElement('h3');
                 challengeHeader.textContent = `${data.game.turn_owner.handle} has declared ${data.game.selected_action}` + 
-                (data.game.target != "" ? ` against ${data.game.target}` : "");
+                (data.game.target != "" ? ` against ${data.game.target.handle}` : "");
                 gameLogContainer.appendChild(challengeHeader);
 
                 const button1 = document.createElement('button');
@@ -240,6 +240,12 @@
                 button2.addEventListener('click', () => {
                     let action = "no_challenge";
                     socket.emit('challenge', {action});
+
+                    const very_elegant = document.querySelector('.game-log');
+                    very_elegant.innerHTML = '';
+                    let challengersHeader = document.createElement('h3');
+                    challengersHeader.textContent = `waiting for others`;
+                    very_elegant.appendChild(challengersHeader);
                 });
                 gameLogContainer.appendChild(button2);
             } else if (data.game.state == 3) {
@@ -247,7 +253,7 @@
             } else if (data.game.state == 4) {
                 if (data.game.turn_owner.handle != data.player.handle) {
                     let infoHeader = document.createElement('h3');
-                    infoHeader.textContent = `${data.game.turn_owner} has lost the challenge! They shall lose favor.`;
+                    infoHeader.textContent = `${data.game.turn_owner.handle} has lost the challenge! They shall lose favor.`;
                     gameLogContainer.appendChild(infoHeader);
                     return;
                 }
@@ -267,9 +273,9 @@
                     gameLogContainer.appendChild(button);
                 });
             } else if (data.game.state == 5) {
-                if (data.game.challenger != data.player.handle) {
+                if (data.game.challenger.handle != data.player.handle) {
                     let infoHeader = document.createElement('h3');
-                    infoHeader.textContent = `${data.game.challenger} has challenged wrogly! They shall lose favor.`;
+                    infoHeader.textContent = `${data.game.challenger.handle} has challenged wrongly! They shall lose favor.`;
                     gameLogContainer.appendChild(infoHeader);
                     return;
                 }
@@ -296,8 +302,8 @@
                     return;
                 }
                 let challengeHeader = document.createElement('h3');
-                challengeHeader.textContent = `${data.game.turn_owner} has declared ${data.game.selected_action}` + 
-                (data.game.target != "" ? ` against ${data.game.target}` : "");
+                challengeHeader.textContent = `${data.game.turn_owner.handle} has declared ${data.game.selected_action}` + 
+                (data.game.target != "" ? ` against ${data.game.target.handle}` : "");
                 gameLogContainer.appendChild(challengeHeader);
 
                 let blocker_list = [];
@@ -324,7 +330,7 @@
                         button.appendChild(cardImg);
                         button.addEventListener('click', () => {
                             let action = card;
-                            let source = game.player;
+                            let source = data.player;
                             socket.emit('action_taken', {action, source});
                         });
                         gameLogContainer.appendChild(button);
@@ -393,8 +399,12 @@
 
                 console.log(data.game.selected_action);
                 if (data.game.selected_action != "assassinate" && data.game.selected_action != "coup") {
+                    console.log("40 guys");
+                    console.log(data.player.handle);
+                    console.log(data.game.turn_owner.handle);
                     if (data.player.handle == data.game.turn_owner.handle) {
                         let action = "end_of_turn";
+                        console.log("alibaba");
                         socket.emit('action_taken', {action});
                     }
                     return;
@@ -448,7 +458,7 @@
             } else if (data.game.state == 13) {
                 if (data.game.turn_owner.handle != data.player.handle) {
                     let infoHeader = document.createElement('h3');
-                    infoHeader.textContent = `${data.game.turn_owner} has challenged the block wrongly! They shall lose favor.`;
+                    infoHeader.textContent = `${data.game.turn_owner.handle} has challenged the block wrongly! They shall lose favor.`;
                     gameLogContainer.appendChild(infoHeader);
                     return;
                 }

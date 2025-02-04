@@ -146,12 +146,12 @@ io.on('connection', function(socket) {
             send_game(game,table_id);
         }
         else {
-            if(!(game_id in challenge_counter)) {
-                challenge_counter[game_id] = 0;
+            if(!(table_id in challenge_counter)) {
+                challenge_counter[table_id] = 0;
             }
-            challenge_counter[game_id]++;
-            if(challenge_counter[game_id] == game.players.length) {
-                challenge_counter[game_id] = 0;
+            challenge_counter[table_id]++;
+            if(challenge_counter[table_id] == game.players.length - 1) {
+                challenge_counter[table_id] = 0;
                 game.handle_action(player,"no_challenge",source,target);
 
                 send_game(game,table_id);
