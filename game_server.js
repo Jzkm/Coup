@@ -1,111 +1,86 @@
-// var http = require('http');
-// var express = require('express');
-// const fs = require('fs');
-// // const session = require('express-session');
-// const socket = require('socket.io');
+var logic = require('./game_logic');
+var server = require("./server");
+const cookie = require('cookie');
+app = server.app;
+io = server.io;
+var games = {};// "mapa" ktora przenosi id_gry na OFICJALNY stan gry
+//każda wartość w mapie games jest instancja klasy (czyli obiekt) która przetrzymuje PEŁNĄ informacje o danej grze
 
-// var app = express();
-// app.set('view engine', 'ejs');
-// app.set('views', './views');
-// app.set('static', './static');
-// app.use( express.static('./static', { etag: false } ) );
-// app.set('etag', false);
-// app.use(express.urlencoded({ extended: true }));
-// app.use(express.json());
-
-// var server = http.createServer(app);
-// var io = socket(server);
-// server.listen(process.env.PORT || 3000, () => console.log('Server started on http://localhost:3000/'));
-
-function main() {
-    var logic = require('./game_logic');
-    var server = require("./server");
-    const cookie = require('cookie');
-    app = server.app;
-    io = server.io;
-    var games = {};// "mapa" ktora przenosi id_gry na OFICJALNY stan gry
-    //każda wartość w mapie games jest instancja klasy (czyli obiekt) która przetrzymuje PEŁNĄ informacje o danej grze
-    
-    function emit_game(data) {
-        io.emit('vis_update',data);
-    }
-    
-    app.get("/Coup/:game_id", (req, res) => {
-        // var game_id = req.params.game_id;
-        // var handle = "..."; //który użytkownik zawołał get
-        
-        // if(!(game_id in games)) {
-        //     res.render(visualization_game_not_found(game_id,handle));
-        //     return;
-        // }
-        // var game = games[game_id];
-    
-    
-    
-        res.render('index_vis');
-    });
-    
-    // app.post("/Coup/:game_id", (req, res) => {
-    //     // var game_id = req.params.game_id;
-    //     // if(!(game_id in games)) {
-    //     //     res.render(visualization_game_not_found(game_id,handle));
-    //     //     return;
-    //     // }
-    //     // var game = games[game_id];
-    //     // var handle = "..."; //który użytkownik zawołał post
-    //     // var action = "..."; //jaka akcja została wykonana
-    
-    //     // handle_action(game,handle,action);//zmienia zmienną game! i tym bardziej ją w mapie!
-    
-    //     // res.render(visualization_post(game,handle));
-    //     res.render(index);
-    // });
-
-    var p1 = new logic.Player("Jan"), p2 = new logic.Player("CyprJan");
-    var game = new logic.Game(1,[p1, p2]);
-    game.game_setup();
-    // p1.coins = 9;
-    // game.discard = "assassin";
-    
-    io.on('connection', function(socket) {
-        console.log('client connected:' + socket.id);
-        const cookies = cookie.parse(socket.handshake.headers.cookie || '');
-        console.log('Cookies:', cookies);
-        socket.on('ping', function(socket) {
-            var player = p1;
-            emit_game({game,player});
-        });
-
-        socket.on('action_taken', function(data) {
-            action = data.action;
-            source = data.source;
-            target = data.target;
-            game.handle_action(p1,action,source,target);
-            var player = p1;
-            emit_game({game,player});
-        });
-    
-    });
-
-       
-    // console.log( 'server listens' );
-    
-    
-    
-    // function sleep(ms) {
-    //     return new Promise(resolve => setTimeout(resolve, ms));
-    // }
-    
-    // async function demo() {
-    //     console.log("Start");
-    //     // await sleep(5000); // Opóźnienie 2 sekundy
-    //     console.log("Po 5 sekundach");
-    //     // emit_game({game,p1});
-    // }
-    
-    // demo();
+function emit_game(data) {
+    io.emit('vis_update',data);
 }
-main();
+
+app.get("/Coup/:game_id", (req, res) => {
+    var game_id = req.params.game_id;
+    var username = req.cookies.cookie.username;
 
 
-module.exports = {main};
+    if(game_id in games) {
+        let player_in_lobby = false;
+        var game = games[game_id];
+        var player;
+        for(let plr of game.players) {
+            if(plr.cookie == username) {
+                player_in_lobby = true;
+                player = plr;
+            }
+        }
+        if(!player_in_lobby) {
+            player = game.players[0];
+        }
+
+        if(player_in_lobby) {
+            res.render('index_vis');
+            emit_game({game,player});
+        }
+        else {
+            //tutaj można dodać playera który jest obserwatorem rozgrywki
+            res.render('index_vis');
+            emit_game({game,player});
+        }
+    }
+    else {
+        res.render('404');
+    }
+});
+
+io.on('connection', function(socket) {
+    console.log('client connected:' + socket.id);
+
+    socket.on('del', function(username) {
+        // console.log('deeel');
+        // console.log(username);
+    })
+
+    // console.log("+ " + socket.id + " => " + username);
+    // socket_id_to_username.set(socket.id, username);
+    socket.on('disconnect', function(data) {
+        // console.log("- " + socket.id);
+        // deleteUser(socket_id_to_username.get(socket.id));
+        // console.log(data);
+        console.log('client disconnected:' + socket.id);
+    })
+    
+
+    const cookies = cookie.parse(socket.handshake.headers.cookie || '');
+    console.log('Cookies:', cookies);
+    socket.on('ping', function(socket) {
+        var player = p1;
+        emit_game({game,player});
+    });
+
+    socket.on('action_taken', function(data) {
+        action = data.action;
+        source = data.source;
+        target = data.target;
+        game.handle_action(p1,action,source,target);
+        var player = p1;
+        emit_game({game,player});
+    });
+});
+
+// var p1 = new logic.Player("Jan"), p2 = new logic.Player("CyprJan");
+// var game = new logic.Game(1,[p1, p2]);
+// game.game_setup();
+
+

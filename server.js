@@ -4,6 +4,7 @@ var express = require('express');
 var expressLayouts = require('express-ejs-layouts');
 var cookieParser = require('cookie-parser');
 var socket = require('socket.io');
+const cookie = require('cookie');
 
 var app = express();
 var server = http.createServer(app);
@@ -44,24 +45,6 @@ let tables = [];
 //         }
 //     }
 // }
-
-// io.on('connection', function(socket) {
-//     console.log('client connected:' + socket.id);
-
-//     socket.on('del', function(username) {
-//         // console.log('deeel');
-//         // console.log(username);
-//     })
-
-//     // console.log("+ " + socket.id + " => " + username);
-//     // socket_id_to_username.set(socket.id, username);
-//     socket.on('disconnect', function(data) {
-//         // console.log("- " + socket.id);
-//         // deleteUser(socket_id_to_username.get(socket.id));
-//         // console.log(data);
-//         console.log('client disconnected:' + socket.id);
-//     })
-// });
 
 for(let i = 1; i <= 100; i++) {
     tables.push({
@@ -251,8 +234,6 @@ app.post('/profile', (req, res) => {
 
 module.exports = {app,io};
 var game_server = require('./game_server');
-
-game_server.main();
 
 app.use((req,res) => {
     // console.log('use /404');
