@@ -185,10 +185,20 @@ class Game {
             // console.log(this.players[1].cards);
         }
         else if(this.selected_action == "exchange") {
+            action = action.split(" ");
+            let card3 = action[0];
+            let card4 = action[1];
+            this.turn_owner.cards.splice(this.turn_owner.cards.indexOf(card3),1);
+            this.turn_owner.cards.splice(this.turn_owner.cards.indexOf(card4),1);
+
+            this.put_card_in_deck(card3);
+            this.put_card_in_deck(card4);
             console.log("exchange");
         }
         else if(this.selected_action == "assassinate") {
-            console.log("assassinate");
+            this.discard = action;
+            this.target.cards.splice(this.target.cards.indexOf(action),1);
+            console.log("assasinate");
         }
         else if(this.selected_action == "income") {
             this.turn_owner.coins += 1;
@@ -199,6 +209,14 @@ class Game {
             console.log("foreign_aid");
         }
         else if(this.selected_action == "steal") {
+            if(this.target.coins >= 2) {
+                this.target.coins -= 2;
+                this.turn_owner.coins += 2;
+            }
+            else if(this.target.coins == 1) {
+                this.target.coins -= 1;
+                this.turn_owner.coins += 1;
+            }
             console.log("steal");
         }
         else if(this.selected_action == "tax") {
@@ -344,6 +362,13 @@ class Game {
 
     handle_state10(player,action,source,target) {
         // rozwiąż akcje poza 
+
+        if(this.selected_action == "exchange") {
+            let card1 = this.draw_card_from_deck();
+            let card2 = this.draw_card_from_deck();
+            this.turn_owner.cards.push(card1);
+            this.turn_owner.cards.push(card2);
+        }
 
         this.state = 14;
         console.log("State 10 resolved");
