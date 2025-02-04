@@ -115,6 +115,20 @@
             const gameLogContainer = document.querySelector('.game-log');
             gameLogContainer.innerHTML = '';
 
+            if (data.game.winner != "") {
+                let winHeader = document.createElement('h3');
+                winHeader.textContent = `${data.game.winner.handle} is the winner! Amazing! Such wow!`;
+                gameLogContainer.appendChild(winHeader);
+                return;
+            }
+
+            if (data.player.cards.length == 0) {
+                let loserHeader = document.createElement('h3');
+                loserHeader.textContent = `You lost!`;
+                gameLogContainer.appendChild(loserHeader);
+                return;
+            }
+
             if (data.game.state == 1) {
                 if (data.game.turn_owner.handle != data.player.handle) {
                     let otherSelectingHeader = document.createElement('h3');
