@@ -206,7 +206,7 @@ class Game {
         console.log("Action resolved!");
     }
 
-    handle_state1(action,source,target) {
+    handle_state1(player,action,source,target) {
         // console.log("XDDDDDD " + action + " " + target);
         this.selected_action = action;
         if(action == "assassinate" || action == "coup" || action == "steal") {
@@ -217,11 +217,17 @@ class Game {
         }
         this.challenger = "";
 
-        this.state = 2;
+        if(this.selected_action == "coup" || this.selected_action == "foreign_aid" || this.selected_action == "income") {
+            this.state = 6;
+            this.handle_action(player,"pay_for_action","","");
+        }
+        else {
+            this.state = 2;
+        }
         console.log("State 1 resolved");
     }
 
-    handle_state2(action,source,target) {
+    handle_state2(player,action,source,target) {
         if(action == "challenge") {
             this.state = 3;
             this.challenger = source;
@@ -232,7 +238,7 @@ class Game {
         console.log("State 2 resolved");
     }
 
-    handle_state3(action,source,target) {
+    handle_state3(player,action,source,target) {
         if(this.turn_owner.cards.includes(this.character_of_action(this.selected_action))) {
             this.state = 5;
         }
@@ -242,14 +248,14 @@ class Game {
         console.log("State 3 resolved");
     }
 
-    handle_state4(action,source,target) {
+    handle_state4(player,action,source,target) {
         this.turn_owner.cards.splice(this.turn_owner.cards.indexOf(action),1);
 
         this.state = 14;
         console.log("State 4 resolved");
     }
 
-    handle_state5(action,source,target) {
+    handle_state5(player,action,source,target) {
         this.challenger.cards.splice(this.challenger.cards.indexOf(action),1);
 
         this.turn_owner.cards.splice(this.turn_owner.cards.indexOf(this.character_of_action(this.selected_action)),1);
@@ -260,15 +266,22 @@ class Game {
         console.log("State 5 resolved");
     }
 
-    handle_state6(action,source,target) {
+    handle_state6(player,action,source,target) {
         if(this.selected_action == "assassinate")
             this.turn_owner.coins -= 3;
-
-        this.state = 7;
+        if(this.selected_action == "coup")
+            this.turn_owner.coins -= 7;
+        if(this.selected_action == "coup" || this.selected_action == "income" || this.selected_action == "exchange" || this.selected_action == "tax") {
+            this.state = 10;
+            this.handle_action(player,"resolve_action","","");
+        }
+        else {
+            this.state = 7;
+        }
         console.log("State 6 resolved");
     }
 
-    handle_state7(action,source,target) {
+    handle_state7(player,action,source,target) {
         if(action == "block") {
             this.state = 8;
             this.blocker = source;
@@ -279,7 +292,7 @@ class Game {
         console.log("State 7 resolved");
     }
 
-    handle_state8(action,source,target) {
+    handle_state8(player,action,source,target) {
         if(action == "challenge") {
             this.state = 9;
             this.challenger = source;
@@ -290,7 +303,7 @@ class Game {
         console.log("State 8 resolved");
     }
 
-    handle_state9(action,source,target) {
+    handle_state9(player,action,source,target) {
         // if(this.blocker.cards.includes(this.blocker_of_action(this.selected_action))) {
         if(valid_block()) {
             this.state = 12;
@@ -302,20 +315,20 @@ class Game {
         
     }
 
-    handle_state10(action,source,target) {
+    handle_state10(player,action,source,target) {
         // rozwiąż akcje 
-        resolve_action();
+        this.resolve_action();
 
         this.state = 14;
         console.log("State 10 resolved");
     }
 
-    handle_state11(action,source,target) {
+    handle_state11(player,action,source,target) {
         this.state = 14;
         console.log("State 11 resolved");
     }
 
-    handle_state12(action,source,target) {
+    handle_state12(player,action,source,target) {
         this.challenger.cards.splice(this.challenger.cards.indexOf(action),1);
 
         this.blocker.cards.splice(this.blocker.cards.indexOf(this.blocker_of_action(this.selected_action)),1);
@@ -326,14 +339,14 @@ class Game {
         console.log("State 12 resolved");
     }
 
-    handle_state13(action,source,target) {
+    handle_state13(player,action,source,target) {
         this.blocker.cards.splice(this.blocker.cards.indexOf(action),1);
 
         this.state = 10;
         console.log("State 13 resolved");
     }
 
-    handle_state14(action,source,target) {
+    handle_state14(player,action,source,target) {
 
         this.state = 1;
         this.turn_owner = next_player_turn();
@@ -346,7 +359,7 @@ class Game {
     handle_action(player,action,source,target) {
         if(this.valid_action(player,action,source,target)) {
             let fn = "handle_state" + this.state;
-            this[fn](action,source,target);
+            this[fn](player,action,source,target);
             console.log("Successful action");
         }
         else {

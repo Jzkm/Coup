@@ -8,6 +8,7 @@ var games = {};// "mapa" ktora przenosi id_gry na OFICJALNY stan gry
 var table_of_user = {};
 var player_of_user = {};
 var users_sitting_in_tables = {};
+var challenge_counter = {};
 // var game_of_user
 //mapuje username na id_stołu
 
@@ -71,6 +72,21 @@ app.get("/Coup/:game_id", (req, res) => {
 //     });
 // }
 
+function send_game(game,table_id) {
+    io.sockets.sockets.forEach((clientsocket) => {
+        let username = cookie.parse(clientsocket.handshake.headers.cookie);
+        username = JSON.parse(username.cookie.slice(2)).username;
+        console.log("wysylanie stanu poczatkowego");
+        console.log(table_of_user[username]);
+        console.log(table_id);
+        if(table_of_user[username] == table_id) {
+            let player = player_of_user[username];
+            console.log("wszedlem to tego ifa!!!");
+            clientsocket.emit("vis_update",{game,player});
+        }
+    });
+}
+
 io.on('connection', function(socket) {
     console.log('client connected:' + socket.id);
 
@@ -100,39 +116,79 @@ io.on('connection', function(socket) {
         io.sockets.sockets.forEach((clientsocket) => {
             let username = cookie.parse(clientsocket.handshake.headers.cookie);
             username = JSON.parse(username.cookie.slice(2)).username;
-            console.log("wysylanie stanu poczatkowego");
-            console.log(table_of_user[username]);
-            console.log(table_id);
+            // console.log("wysylanie stanu poczatkowego");
+            // console.log(table_of_user[username]);
+            // console.log(table_id);
             if(table_of_user[username] == table_id) {
                 let player = player_of_user[username];
-                console.log("wszedlem to tego ifa!!!");
+                // console.log("wszedlem to tego ifa!!!");
                 clientsocket.emit("vis_update",{game,player});
             }
         });
     });
 
-    socket.on('action_taken', function(data) {
+    socket.on('challenge', function(data) {
+        let cou
         let username = cookie.parse(socket.handshake.headers.cookie);
         username = JSON.parse(username.cookie.slice(2)).username;
+        let player = player_of_user[username]
         let table_id = table_of_user[username];
         let game = games[table_id];
         action = data.action;
         source = data.source;
         target = data.target;
-        game.handle_action(p1,action,source,target);
 
-        io.sockets.sockets.forEach((clientsocket) => {
-            let username = cookie.parse(clientsocket.handshake.headers.cookie);
-            username = JSON.parse(username.cookie.slice(2)).username;
-            console.log("wysylanie stanu poczatkowego");
-            console.log(table_of_user[username]);
-            console.log(table_id);
-            if(table_of_user[username] == table_id) {
-                let player = player_of_user[username];
-                console.log("wszedlem to tego ifa!!!");
-                clientsocket.emit("vis_update",{game,player});
+        if(action == "challenge") {
+            game.handle_action(player,action,source,target);
+
+            send_game(game,table_id);
+        }
+        else {
+            if(!(game_id in challenge_counter)) {
+                challenge_counter[game_id] = 0;
             }
-        });
+            challenge_counter[game_id]++;
+            if(challenge_counter[game_id] == game.players.length) {
+                challenge_counter[game_id] = 0;
+                game.handle_action(player,"no_challenge",source,target);
+
+                send_game(game,table_id);
+            }
+        }
+    });
+
+    socket.on('action_taken', function(data) {
+        let username = cookie.parse(socket.handshake.headers.cookie);
+        username = JSON.parse(username.cookie.slice(2)).username;
+        let player = player_of_user[username]
+        let table_id = table_of_user[username];
+        let game = games[table_id];
+        action = data.action;
+        source = data.source;
+        target = data.target;
+
+        console.log("Tak wyglada gra przed update:");
+        console.log(game);
+
+        game.handle_action(player,action,source,target);
+
+        console.log("Tak wyglada gra po update:");
+        console.log(game);
+
+        send_game(game,table_id);
+
+        // io.sockets.sockets.forEach((clientsocket) => {
+        //     let username = cookie.parse(clientsocket.handshake.headers.cookie);
+        //     username = JSON.parse(username.cookie.slice(2)).username;
+        //     console.log("wysylanie stanu poczatkowego");
+        //     console.log(table_of_user[username]);
+        //     console.log(table_id);
+        //     if(table_of_user[username] == table_id) {
+        //         let player = player_of_user[username];
+        //         console.log("wszedlem to tego ifa!!!");
+        //         clientsocket.emit("vis_update",{game,player});
+        //     }
+        // });
     });
     socket.on('redirect', function(data) {
         console.log("Dostałem redirect i jestem serwerem");

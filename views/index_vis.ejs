@@ -109,7 +109,7 @@
                 if (data.game.turn_owner.handle != data.player.handle) {
                     let otherSelectingHeader = document.createElement('h3');
                     otherSelectingHeader.textContent = `${data.game.turn_owner.handle} is selecting their move.`;
-                    gameLogContainer.appendChild(targetSelectionHeader);
+                    gameLogContainer.appendChild(otherSelectingHeader);
                     return;
                 }
 
@@ -222,7 +222,7 @@
                     return;
                 }
                 let challengeHeader = document.createElement('h3');
-                challengeHeader.textContent = `${data.game.turn_owner} has declared ${data.game.selected_action}` + 
+                challengeHeader.textContent = `${data.game.turn_owner.handle} has declared ${data.game.selected_action}` + 
                 (data.game.target != "" ? ` against ${data.game.target}` : "");
                 gameLogContainer.appendChild(challengeHeader);
 
@@ -231,7 +231,7 @@
                 button1.addEventListener('click', () => {
                     let action = "challenge";
                     let source = data.player;
-                    socket.emit('action_taken', {action, source});
+                    socket.emit('challenge', {action, source});
                 });
                 gameLogContainer.appendChild(button1);
 
@@ -239,7 +239,7 @@
                 button2.textContent = "no challenge";
                 button2.addEventListener('click', () => {
                     let action = "no_challenge";
-                    socket.emit('action_taken', {action});
+                    socket.emit('challenge', {action});
                 });
                 gameLogContainer.appendChild(button2);
             } else if (data.game.state == 3) {
@@ -384,7 +384,7 @@
                 gameLogContainer.appendChild(button2);
             } else if (data.game.state == 9) {
                 consele.log("it seems we got lost");
-            } else if (data.game.state == 10) {
+            } else if (data.game.state == 14) {
                 let infoHeader = document.createElement('h3');
                 infoHeader.textContent = `Action resolving.`;
                 gameLogContainer.appendChild(infoHeader);
