@@ -167,7 +167,7 @@
                         let action = entry[3];
                         button.addEventListener("click", () => {
                             // console.log("click");
-                            if (action == "coup" || action == "assassinate") {
+                            if (action == "coup" || action == "assassinate" || action == "steal") {
                                 data.game.action = action;
                                 data.game.state = 15;
                                 updateGameLog(data);
@@ -346,6 +346,12 @@
                     button_no.addEventListener('click', () => {
                         let action = "no_block";
                         socket.emit('block', {action});
+
+                        const very_elegant = document.querySelector('.game-log');
+                        very_elegant.innerHTML = '';
+                        let challengersHeader = document.createElement('h3');
+                        challengersHeader.textContent = `waiting for others`;
+                        very_elegant.appendChild(challengersHeader);
                     });
                     gameLogContainer.appendChild(button_no);
                 }
@@ -433,10 +439,10 @@
                 }
             } else if (data.game.state == 11) {
                 consele.log("it seems we got lost");
-            } else if (data.game.state == 12) {
-                if (data.game.blocker != data.player.handle) {
+            } else if (data.game.state == 13) {
+                if (data.game.blocker.handle != data.player.handle) {
                     let infoHeader = document.createElement('h3');
-                    infoHeader.textContent = `${data.game.blocker}'s block was a fake! They shall lose favor.`;
+                    infoHeader.textContent = `${data.game.blocker.handle}'s block was a fake! They shall lose favor.`;
                     gameLogContainer.appendChild(infoHeader);
                     return;
                 }
@@ -455,7 +461,7 @@
                     });
                     gameLogContainer.appendChild(button);
                 });
-            } else if (data.game.state == 13) {
+            } else if (data.game.state == 12) {
                 if (data.game.turn_owner.handle != data.player.handle) {
                     let infoHeader = document.createElement('h3');
                     infoHeader.textContent = `${data.game.turn_owner.handle} has challenged the block wrongly! They shall lose favor.`;

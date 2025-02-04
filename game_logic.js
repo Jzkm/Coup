@@ -144,11 +144,7 @@ class Game {
 
     // sprawdza czy this.blocker ma karty potrzebne do zblokowania this.selected_action
     valid_block() {
-        for(let character of this.blocker_of_action(this.selected_action)) {
-            if(this.blocker.cards.includes(character))
-                return true;
-        }
-        return false;
+        return this.blocker.cards.includes(this.blocking_with);
     }
 
     valid_action(player,action,source,target) {
@@ -312,6 +308,7 @@ class Game {
                     this.blocker = plr;
                 }
             }
+            this.blocking_with = action;
         }
         else {
             this.state = 10;
@@ -323,17 +320,19 @@ class Game {
     handle_state8(player,action,source,target) {
         if(action == "challenge") {
             this.state = 9;
-            this.challenger = source;
+            this.challenger = this.turn_owner;
+            this.handle_action(player,"show_card","","");
         }
         else {
             this.state = 11;
+            this.handle_action(player,"blocked","","");
         }
         console.log("State 8 resolved");
     }
 
     handle_state9(player,action,source,target) {
         // if(this.blocker.cards.includes(this.blocker_of_action(this.selected_action))) {
-        if(valid_block()) {
+        if(this.valid_block()) {
             this.state = 12;
         }
         else {
@@ -351,8 +350,9 @@ class Game {
     }
 
     handle_state11(player,action,source,target) {
-        this.state = 14;
         console.log("State 11 resolved");
+        this.state = 14;
+        this.handle_action(player,"failed","","");
     }
 
     handle_state12(player,action,source,target) {
@@ -372,6 +372,7 @@ class Game {
         this.discard = action;
 
         this.state = 10;
+        this.handle_action(player,"resolve_action","","");
         console.log("State 13 resolved");
     }
 
