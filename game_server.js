@@ -80,8 +80,10 @@ function send_game(game,table_id) {
         console.log(table_of_user[username]);
         console.log(table_id);
         if(table_of_user[username] == table_id) {
-            let player = player_of_user[username];
+            var player = player_of_user[username];
             console.log("wszedlem to tego ifa!!!");
+            console.log(game);
+            console.log(player.cards);
             clientsocket.emit("vis_update",{game,player});
         }
     });
@@ -162,18 +164,20 @@ io.on('connection', function(socket) {
         username = JSON.parse(username.cookie.slice(2)).username;
         let player = player_of_user[username]
         let table_id = table_of_user[username];
-        let game = games[table_id];
+        var game = games[table_id];
         action = data.action;
         source = data.source;
         target = data.target;
 
         console.log("Tak wyglada gra przed update:");
-        console.log(game);
+        console.log(game.players[0].cards.length);
+        console.log(game.players[1].cards.length);
 
         game.handle_action(player,action,source,target);
 
         console.log("Tak wyglada gra po update:");
-        console.log(game);
+        console.log(game.players[0].cards.length);
+        console.log(game.players[1].cards.length);
 
         send_game(game,table_id);
 
@@ -207,7 +211,7 @@ io.on('connection', function(socket) {
             if(server.tables[table_id - 1].players.includes(username)) {
                 console.log(`Robie redirect dla uzytkownika o ciasteczku ${cookies.username}`);
                 // clientsocket.emit("redirect",{});
-                let p = new logic.Player(username);
+                var p = new logic.Player(username);
                 players.push(p);
                 table_of_user[username] = table_id;
                 player_of_user[username] = p;

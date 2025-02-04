@@ -24,7 +24,7 @@ Dla każdego state'u gry wyszystkie możliwe wartości zmiennych:
         action: "show_card"
     State 10:
         action: "resolve_action"
-        action: "ambassador","inquisitor","contessa","captain","duke","assasin"
+        
     State 11:
         action: "blocked"
     State 12:
@@ -33,5 +33,5 @@ Dla każdego state'u gry wyszystkie możliwe wartości zmiennych:
     State 13:
         action: "ambassador","inquisitor","contessa","captain","duke","assasin"
     State 14:
-        action: "end_of_turn"
+        action: "end_of_turn", "ambassador","inquisitor","contessa","captain","duke","assasin"
 

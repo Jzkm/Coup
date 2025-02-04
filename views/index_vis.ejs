@@ -482,6 +482,8 @@
             let cardsHeader = document.createElement('h3');
             cardsHeader.textContent = 'Your cards:';
             playerHandContainer.appendChild(cardsHeader);
+            console.log("Tutaj1!!!!!");
+            console.log(data.player.cards);
             data.player.cards.forEach(card => {
                 let cardImg = document.createElement('img');
                 cardImg.src = `/instructors/${coup_to_uwr[card]}.png`;

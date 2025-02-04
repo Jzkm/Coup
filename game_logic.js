@@ -48,7 +48,7 @@ class Game {
     game_id = 0;
     players = []; //intancja klasy Player
     deck = []; //tablica kart, których nikt nie ma (kolejność MA znaczenie!)
-    discard = ""; //tablica kart, które zostały odrzucone przez graczy
+    discard = ""; //ostatnia karta, które zostały odrzucona przez graczy
     turn_owner = new Player("Wildcard"); //tura którego gracza, wartoscia jest instancja klasy Player
     state = 1; //typ (z grafu), który jest aktualnie
     selected_action = "";
@@ -76,7 +76,7 @@ class Game {
         this.state = 1;
 
         for(let player of this.players) {
-            player.coins = 2;
+            player.coins = 8;
             player.cards = this.deck.splice(0,2);
         }
 
@@ -168,37 +168,45 @@ class Game {
         return this.players[idx];
     }
 
-    resolve_action() {
-        if(this.selected_action == "income") {
-            //łubudubu do doklepania straszna akcja
+
+    resolve_action(action) {
+        if(this.selected_action == "coup") {
+            // console.log("Target:");
+            // console.log(this.target);
+            // console.log("Karty przed:");
+            // console.log(this.target.cards);
+
+            this.discard = action;
+            this.target.cards.splice(this.target.cards.indexOf(action),1);
+
+            // console.log("Karty po:");
+            // console.log(this.target.cards);
+            // console.log("Cała gra:");
+            // console.log(this);
+            // console.log("coup");
+            // console.log("Karty graczy:");
+            // console.log(this.players[0].cards);
+            // console.log(this.players[1].cards);
+        }
+        else if(this.selected_action == "exchange") {
+            console.log("exchange");
+        }
+        else if(this.selected_action == "assassinate") {
+            console.log("assassinate");
+        }
+        else if(this.selected_action == "income") {
             this.turn_owner.coins += 1;
             console.log("income");
         }
         else if(this.selected_action == "foreign_aid") {
-            //łubudubu do doklepania straszna akcja
             this.turn_owner.coins += 2;
             console.log("foreign_aid");
         }
-        else if(this.selected_action == "coup") {
-            //łubudubu do doklepania straszna akcja
-            // this.turn_owner.coins += 3;
-            console.log("coup");
-        }
-        else if(this.selected_action == "exchange") {
-            // this.turn_owner.coins += 4;
-            console.log("exchange");
-        }
         else if(this.selected_action == "steal") {
-            // this.turn_owner.coins += 6;
             console.log("steal");
         }
         else if(this.selected_action == "tax") {
-            // this.turn_owner.coins += 7;
             console.log("tax");
-        }
-        else if(this.selected_action == "assassinate") {
-            // this.turn_owner.coins += 8;
-            console.log("assassinate");
         }
         else {
             console.log("Action name not found!");
@@ -210,7 +218,11 @@ class Game {
         // console.log("XDDDDDD " + action + " " + target);
         this.selected_action = action;
         if(action == "assassinate" || action == "coup" || action == "steal") {
-            this.target = target;
+            for(var plr of this.players) {
+                if(plr.handle == target.handle) {
+                    this.target = plr;
+                }
+            }
         }
         else {
             this.target = "";
@@ -316,8 +328,7 @@ class Game {
     }
 
     handle_state10(player,action,source,target) {
-        // rozwiąż akcje 
-        this.resolve_action();
+        // rozwiąż akcje poza 
 
         this.state = 14;
         console.log("State 10 resolved");
@@ -347,6 +358,8 @@ class Game {
     }
 
     handle_state14(player,action,source,target) {
+
+        this.resolve_action(action);
 
         this.state = 1;
         this.turn_owner = this.next_player_turn();
