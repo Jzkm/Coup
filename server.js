@@ -232,7 +232,7 @@ app.post('/profile', (req, res) => {
 
 
 
-module.exports = {app,io};
+module.exports = {app, io, tables};
 var game_server = require('./game_server');
 
 app.use((req,res) => {

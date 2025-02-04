@@ -14,6 +14,11 @@ app.get("/Coup/:game_id", (req, res) => {
     var game_id = req.params.game_id;
     var username = req.cookies.cookie.username;
 
+    for(let i = 0; i < 10; i++) {
+        if(server.tables[game_id - 1].players[i] !== `Player ${i + 1}`) {
+            console.log(server.tables[game_id - 1].players[i]);
+        }
+    }
 
     if(game_id in games) {
         let player_in_lobby = false;
