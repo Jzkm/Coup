@@ -20,6 +20,7 @@
 function main() {
     var logic = require('./game_logic');
     var server = require("./server");
+    const cookie = require('cookie');
     app = server.app;
     io = server.io;
     var games = {};// "mapa" ktora przenosi id_gry na OFICJALNY stan gry
@@ -68,7 +69,18 @@ function main() {
     
     io.on('connection', function(socket) {
         console.log('client connected:' + socket.id);
+        const cookies = cookie.parse(socket.handshake.headers.cookie || '');
+        console.log('Cookies:', cookies);
         socket.on('ping', function(socket) {
+            var player = p1;
+            emit_game({game,player});
+        });
+
+        socket.on('action_taken', function(data) {
+            action = data.action;
+            source = data.source;
+            target = data.target;
+            game.handle_action(p1,action,source,target);
             var player = p1;
             emit_game({game,player});
         });
@@ -76,7 +88,7 @@ function main() {
     });
 
        
-    console.log( 'server listens' );
+    // console.log( 'server listens' );
     
     
     
