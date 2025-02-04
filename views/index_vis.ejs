@@ -404,38 +404,75 @@
                 gameLogContainer.appendChild(infoHeader);
 
                 console.log(data.game.selected_action);
-                if (data.game.selected_action != "assassinate" && data.game.selected_action != "coup") {
-                    console.log("40 guys");
-                    console.log(data.player.handle);
-                    console.log(data.game.turn_owner.handle);
+                if (data.game.selected_action != "assassinate" && data.game.selected_action != "coup" && data.game.selected_action != "exchange") {
                     if (data.player.handle == data.game.turn_owner.handle) {
                         let action = "end_of_turn";
-                        console.log("alibaba");
                         socket.emit('action_taken', {action});
                     }
                     return;
                 }
 
-                let infoHeader2 = document.createElement('h3');
-                if (data.game.target.handle == data.player.handle) {
-                    infoHeader2.textContent = `You must discard a profesor.`;
-                } else {
-                    infoHeader2.textContent = `${data.game.target.handle} must discard a profesor.`;
-                }
-                gameLogContainer.appendChild(infoHeader2);
+                if (data.game.selected_action == "exchange") {
+                    let infoHeader2 = document.createElement('h3');
+                    if (data.game.turn_owner.handle == data.player.handle) {
+                        infoHeader2.textContent = `You must return 2 cards to the deck.`;
+                    } else {
+                        infoHeader2.textContent = `${data.game.turn_owner.handle} must choose cards to return to the deck.`;
+                    }
+                    gameLogContainer.appendChild(infoHeader2);
+    
+                    if (data.game.turn_owner.handle == data.player.handle) {
 
-                if (data.game.target.handle == data.player.handle) {
-                    data.player.cards.forEach(card => {
-                        const button = document.createElement('button');
-                        let cardImg = document.createElement('img');
-                        cardImg.src = `/instructors/${coup_to_uwr[card]}.png`;
-                        button.appendChild(cardImg);
-                        button.addEventListener('click', () => {
-                            let action = card;
-                            socket.emit('action_taken', {action});
+                        var first_card = "";
+
+                        data.player.cards.forEach(card => {
+                            const button = document.createElement('button');
+                            let cardImg = document.createElement('img');
+                            cardImg.src = `/instructors/${coup_to_uwr[card]}.png`;
+                            button.appendChild(cardImg);
+
+                            var clicked = false;
+
+                            button.addEventListener('click', () => {
+                                if (clicked) {
+                                    return;
+                                }
+                                clicked = true;
+
+                                if (first_card == "") {
+                                    first_card = card;
+                                }
+                                else {
+                                    let action = first_card + " " + card;
+                                    socket.emit('action_taken', {action});   
+                                }
+                            });
+                            gameLogContainer.appendChild(button);
                         });
-                        gameLogContainer.appendChild(button);
-                    });
+                    }
+                }
+                else {
+                    let infoHeader2 = document.createElement('h3');
+                    if (data.game.target.handle == data.player.handle) {
+                        infoHeader2.textContent = `You must discard a profesor.`;
+                    } else {
+                        infoHeader2.textContent = `${data.game.target.handle} must discard a profesor.`;
+                    }
+                    gameLogContainer.appendChild(infoHeader2);
+    
+                    if (data.game.target.handle == data.player.handle) {
+                        data.player.cards.forEach(card => {
+                            const button = document.createElement('button');
+                            let cardImg = document.createElement('img');
+                            cardImg.src = `/instructors/${coup_to_uwr[card]}.png`;
+                            button.appendChild(cardImg);
+                            button.addEventListener('click', () => {
+                                let action = card;
+                                socket.emit('action_taken', {action});
+                            });
+                            gameLogContainer.appendChild(button);
+                        });
+                    }
                 }
             } else if (data.game.state == 11) {
                 consele.log("it seems we got lost");
