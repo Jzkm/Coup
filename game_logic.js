@@ -135,7 +135,7 @@ class Game {
             return ["duke"];
         }
         if(action == "steal") {
-            return ["captain","ambassador","inquisitor"];
+            return ["captain","ambassador"];
         }
         if(action == "assassinate") {
             return ["contessa"];
@@ -172,12 +172,12 @@ class Game {
     resolve_action() {
         if(this.selected_action == "income") {
             //łubudubu do doklepania straszna akcja
-            // this.turn_owner.coins += 1;
+            this.turn_owner.coins += 1;
             console.log("income");
         }
         else if(this.selected_action == "foreign_aid") {
             //łubudubu do doklepania straszna akcja
-            // this.turn_owner.coins += 2;
+            this.turn_owner.coins += 2;
             console.log("foreign_aid");
         }
         else if(this.selected_action == "coup") {

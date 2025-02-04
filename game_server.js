@@ -14,11 +14,11 @@ app.get("/Coup/:game_id", (req, res) => {
     var game_id = req.params.game_id;
     var username = req.cookies.cookie.username;
 
-    for(let i = 0; i < 10; i++) {
-        if(server.tables[game_id - 1].players[i] !== `Player ${i + 1}`) {
-            console.log(server.tables[game_id - 1].players[i]);
-        }
-    }
+    // for(let i = 0; i < 10; i++) {
+    //     if(server.tables[game_id - 1].players[i] !== `Player ${i + 1}`) {
+    //         console.log(server.tables[game_id - 1].players[i]);
+    //     }
+    // }
 
     if(game_id in games) {
         let player_in_lobby = false;
@@ -81,6 +81,25 @@ io.on('connection', function(socket) {
         game.handle_action(p1,action,source,target);
         var player = p1;
         emit_game({game,player});
+    });
+    socket.on('redirect', function(data) {
+        console.log("Dostałem redirect i jestem serwerem");
+        let table_id = data.table_id;
+        // socket.broadcast.emit("redirect",{});
+        // socket.emit("redirect",{});
+        console.log("Iteruje sie po ciastakach:");
+        io.sockets.sockets.forEach((clientsocket) => {
+            let username = cookie.parse(clientsocket.handshake.headers.cookie);
+            console.log("Ciastko aktualnego clienta:");
+            username = JSON.parse(username.cookie.slice(2)).username;
+            console.log(username);
+            console.log(`Username'y przy tym stole:`);
+            console.log(server.tables[table_id - 1].players);
+            if(server.tables[table_id - 1].players.includes(username)) {
+                console.log(`Robie redirect dla uzytkownika o ciasteczku ${cookies.username}`);
+                clientsocket.emit("redirect",{});
+            }
+        });
     });
 });
 

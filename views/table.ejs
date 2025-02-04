@@ -6,9 +6,8 @@
         <button class="button-login" type="submit">Tables</button>
     </form>
 
-    <form action="/Coup/<%=tableId%>" method="GET">
-        <button class="button-login" type="submit">Start game</button>
-    </form>
+    <button class="button-login" id = "redirect" type="submit">Start game</button>
+
 </div>
 <div>
     <script>
@@ -16,4 +15,16 @@
     </script>
     <script src="/socket.io/socket.io.js"></script>
     <script src="/static/script2.js"></script>
+    <script>
+        var table_id = "<%=tableId%>";
+        socket.on('redirect', function(data) {
+            // console.log("XDSDAGDSAGHASHYADSH");
+            window.location.href = `Coup/${table_id}`;
+        });
+        var button = document.getElementById("redirect");
+        button.onclick = () => {
+            // window.location.href = `Coup/${table_id}`;
+            socket.emit('redirect',{table_id});
+        };
+    </script>
 </div>
