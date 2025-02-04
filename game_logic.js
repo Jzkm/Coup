@@ -26,7 +26,7 @@ const rl = readline.createInterface({
 });
 
 var characters = ["ambassador","contessa","captain","duke","assassin"];
-var actions = ["income", "foreign_aid", "coup", "exchange", "examine", "steal", "tax", "assassinate"];
+var actions = ["income", "foreign_aid", "coup", "exchange", "steal", "tax", "assassinate"];
 
 // UWAGA: Gracz jest nie tym samym co użytnownik strony
 // tzn. jeden użytkownik może mieć 2 instancje klasy Player (grając jednocześnie w Coup_room1 i w Coup_room2)
@@ -117,9 +117,6 @@ class Game {
         if(action == "exchange") {
             return "ambassador";
         }
-        if(action == "examine") {
-            return "inquisitor";
-        }
         if(action == "steal") {
             return "captain";
         }
@@ -136,9 +133,6 @@ class Game {
     blocker_of_action(action) {
         if(action == "foreign_aid") {
             return ["duke"];
-        }
-        if(action == "examine") {
-            return ["contessa"];
         }
         if(action == "steal") {
             return ["captain","ambassador","inquisitor"];
@@ -195,10 +189,6 @@ class Game {
             // this.turn_owner.coins += 4;
             console.log("exchange");
         }
-        else if(this.selected_action == "examine") {
-            // this.turn_owner.coins += 5;
-            console.log("examine");
-        }
         else if(this.selected_action == "steal") {
             // this.turn_owner.coins += 6;
             console.log("steal");
@@ -220,7 +210,7 @@ class Game {
     handle_state1(action,source,target) {
         // console.log("XDDDDDD " + action + " " + target);
         this.selected_action = action;
-        if(action == "assassinate" || action == "coup" || action == "examine" || action == "steal") {
+        if(action == "assassinate" || action == "coup" || action == "steal") {
             this.target = target;
         }
         else {
