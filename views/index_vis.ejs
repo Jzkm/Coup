@@ -208,7 +208,7 @@
                         button.textContent = player.handle;
                         button.addEventListener('click', () => {
                             let action = data.game.action;
-                            let target = player.handle;
+                            let target = player;
                             socket.emit('action_taken', {action, target});
                         });
                         gameLogContainer.appendChild(button);
@@ -384,24 +384,31 @@
                 gameLogContainer.appendChild(button2);
             } else if (data.game.state == 9) {
                 consele.log("it seems we got lost");
+            } else if (data.game.state == 10) {
+                consele.log("it seems we got lost");
             } else if (data.game.state == 14) {
                 let infoHeader = document.createElement('h3');
                 infoHeader.textContent = `Action resolving.`;
                 gameLogContainer.appendChild(infoHeader);
 
-                if (data.game.action != "assassinate" && data.game.action != "coup") {
+                console.log(data.game.selected_action);
+                if (data.game.selected_action != "assassinate" && data.game.selected_action != "coup") {
+                    if (data.player.handle == data.game.turn_owner.handle) {
+                        let action = "end_of_turn";
+                        socket.emit('action_taken', {action});
+                    }
                     return;
                 }
 
                 let infoHeader2 = document.createElement('h3');
-                if (data.game.target.handle == data.player) {
+                if (data.game.target.handle == data.player.handle) {
                     infoHeader2.textContent = `You must discard a profesor.`;
                 } else {
-                    infoHeader2.textContent = `${data.game.targer.handle} must discard a profesor.`;
+                    infoHeader2.textContent = `${data.game.target.handle} must discard a profesor.`;
                 }
                 gameLogContainer.appendChild(infoHeader2);
 
-                if (data.game.target.handle == data.player) {
+                if (data.game.target.handle == data.player.handle) {
                     data.player.cards.forEach(card => {
                         const button = document.createElement('button');
                         let cardImg = document.createElement('img');

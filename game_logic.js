@@ -349,7 +349,7 @@ class Game {
     handle_state14(player,action,source,target) {
 
         this.state = 1;
-        this.turn_owner = next_player_turn();
+        this.turn_owner = this.next_player_turn();
         console.log("State 14 resolved");
         console.log("End of turn");
     }
