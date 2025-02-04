@@ -5,6 +5,11 @@ app = server.app;
 io = server.io;
 var games = {};// "mapa" ktora przenosi id_gry na OFICJALNY stan gry
 //każda wartość w mapie games jest instancja klasy (czyli obiekt) która przetrzymuje PEŁNĄ informacje o danej grze
+var table_of_user = {};
+var player_of_user = {};
+var users_sitting_in_tables = {};
+// var game_of_user
+//mapuje username na id_stołu
 
 function emit_game(data) {
     io.emit('vis_update',data);
@@ -19,8 +24,14 @@ app.get("/Coup/:game_id", (req, res) => {
     //         console.log(server.tables[game_id - 1].players[i]);
     //     }
     // }
-
+    console.log("To są wszystkie games:");
+    console.log(games);
     if(game_id in games) {
+        if(!(game_id in users_sitting_in_tables))
+            users_sitting_in_tables[game_id] = 1;
+        else
+            users_sitting_in_tables[game_id] += 1;
+            
         let player_in_lobby = false;
         var game = games[game_id];
         var player;
@@ -49,6 +60,17 @@ app.get("/Coup/:game_id", (req, res) => {
     }
 });
 
+// function init_game(game,table_id) {
+//     io.sockets.sockets.forEach((clientsocket) => {
+//         let username = cookie.parse(clientsocket.handshake.headers.cookie);
+//         username = JSON.parse(username.cookie.slice(2)).username;
+//         if(server.tables[table_id - 1].players.includes(username)) {
+//             player = player_of_user[username];
+//             clientsocket.emit("vis_update",{game,player});
+//         }
+//     });
+// }
+
 io.on('connection', function(socket) {
     console.log('client connected:' + socket.id);
 
@@ -69,18 +91,48 @@ io.on('connection', function(socket) {
 
     const cookies = cookie.parse(socket.handshake.headers.cookie || '');
     console.log('Cookies:', cookies);
-    // socket.on('ping', function(socket) {
-    //     var player = p1;
-    //     emit_game({game,player});
-    // });
+    socket.on('ping', function(data) {
+        let origuser = cookie.parse(socket.handshake.headers.cookie);
+        origuser = JSON.parse(origuser.cookie.slice(2)).username;
+        table_id = table_of_user[origuser];
+        let game = games[table_id];
+
+        io.sockets.sockets.forEach((clientsocket) => {
+            let username = cookie.parse(clientsocket.handshake.headers.cookie);
+            username = JSON.parse(username.cookie.slice(2)).username;
+            console.log("wysylanie stanu poczatkowego");
+            console.log(table_of_user[username]);
+            console.log(table_id);
+            if(table_of_user[username] == table_id) {
+                let player = player_of_user[username];
+                console.log("wszedlem to tego ifa!!!");
+                clientsocket.emit("vis_update",{game,player});
+            }
+        });
+    });
 
     socket.on('action_taken', function(data) {
+        let username = cookie.parse(socket.handshake.headers.cookie);
+        username = JSON.parse(username.cookie.slice(2)).username;
+        let table_id = table_of_user[username];
+        let game = games[table_id];
         action = data.action;
         source = data.source;
         target = data.target;
         game.handle_action(p1,action,source,target);
-        var player = p1;
-        emit_game({game,player});
+
+        io.sockets.sockets.forEach((clientsocket) => {
+            let username = cookie.parse(clientsocket.handshake.headers.cookie);
+            username = JSON.parse(username.cookie.slice(2)).username;
+            console.log("wysylanie stanu poczatkowego");
+            console.log(table_of_user[username]);
+            console.log(table_id);
+            if(table_of_user[username] == table_id) {
+                let player = player_of_user[username];
+                console.log("wszedlem to tego ifa!!!");
+                clientsocket.emit("vis_update",{game,player});
+            }
+        });
     });
     socket.on('redirect', function(data) {
         console.log("Dostałem redirect i jestem serwerem");
@@ -98,12 +150,44 @@ io.on('connection', function(socket) {
             console.log(server.tables[table_id - 1].players);
             if(server.tables[table_id - 1].players.includes(username)) {
                 console.log(`Robie redirect dla uzytkownika o ciasteczku ${cookies.username}`);
-                clientsocket.emit("redirect",{});
-                players.push(new logic.Player(username));
+                // clientsocket.emit("redirect",{});
+                let p = new logic.Player(username);
+                players.push(p);
+                table_of_user[username] = table_id;
+                player_of_user[username] = p;
             }
         });
         let game = new logic.Game(table_id,players);
-        games.table_id = game;
+        game.game_setup();
+        games[table_id] = game;
+        io.sockets.sockets.forEach((clientsocket) => {
+            let username = cookie.parse(clientsocket.handshake.headers.cookie);
+            username = JSON.parse(username.cookie.slice(2)).username;
+            if(server.tables[table_id - 1].players.includes(username)) {
+                clientsocket.emit("redirect",{});
+            }
+        });
+
+        // let debil = 0;
+        // while(users_sitting_in_tables[table_id] < games[table_id].players.length || users_sitting_in_tables[table_id] == undefined){
+        //     debil++;
+        // }
+        // console.log("Siedzacy ludzie:");
+        // console.log(users_sitting_in_tables[table_id]);
+        // console.log(games[table_id].players.length);
+
+        // io.sockets.sockets.forEach((clientsocket) => {
+        //     let username = cookie.parse(clientsocket.handshake.headers.cookie);
+        //     username = JSON.parse(username.cookie.slice(2)).username;
+        //     console.log("wysylanie stanu poczatkowego");
+        //     console.log(table_of_user[username]);
+        //     console.log(table_id);
+        //     if(table_of_user[username] == table_id) {
+        //         let player = player_of_user[username];
+        //         console.log("wszedlem to tego ifa!!!");
+        //         clientsocket.emit("vis_update",{game,player});
+        //     }
+        // });
     });
 });
 

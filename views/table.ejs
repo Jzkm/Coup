@@ -19,7 +19,7 @@
         var table_id = "<%=tableId%>";
         socket.on('redirect', function(data) {
             // console.log("XDSDAGDSAGHASHYADSH");
-            window.location.href = `Coup/${table_id}`;
+            window.location.href = `/Coup/${table_id}`;
         });
         var button = document.getElementById("redirect");
         button.onclick = () => {
