@@ -13,9 +13,9 @@ var block_counter = {};
 // var game_of_user
 //mapuje username na id_stołu
 
-function emit_game(data) {
-    io.emit('vis_update',data);
-}
+// function emit_game(data) {
+//     socket.emit('vis_update',data);
+// }
 
 app.get("/Coup/:game_id", (req, res) => {
     var game_id = req.params.game_id;
@@ -49,12 +49,12 @@ app.get("/Coup/:game_id", (req, res) => {
 
         if(player_in_lobby) {
             res.render('index_vis');
-            emit_game({game,player});
+            // emit_game({game,player});
         }
         else {
             //tutaj można dodać playera który jest obserwatorem rozgrywki
             res.render('index_vis');
-            emit_game({game,player});
+            // emit_game({game,player});
         }
     }
     else {
@@ -198,9 +198,9 @@ io.on('connection', function(socket) {
         source = data.source;
         target = data.target;
 
-        console.log("Tak wyglada gra przed update:");
-        console.log(game.players[0].cards.length);
-        console.log(game.players[1].cards.length);
+        // console.log("Tak wyglada gra przed update:");
+        // console.log(game.players[0].cards.length);
+        // console.log(game.players[1].cards.length);
 
         game.handle_action(player,action,source,target);
 
@@ -210,9 +210,9 @@ io.on('connection', function(socket) {
             }
         }
 
-        console.log("Tak wyglada gra po update:");
-        console.log(game.players[0].cards.length);
-        console.log(game.players[1].cards.length);
+        // console.log("Tak wyglada gra po update:");
+        // console.log(game.players[0].cards.length);
+        // console.log(game.players[1].cards.length);
 
         send_game(game,table_id);
 
@@ -234,6 +234,10 @@ io.on('connection', function(socket) {
         let table_id = data.table_id;
         // socket.broadcast.emit("redirect",{});
         // socket.emit("redirect",{});
+        console.log("Stoły damiana");
+        for(let _=0;_<5;_++) {
+            console.log(server.tables[_]);
+        }
         let players = [];
         console.log("Iteruje sie po ciastakach:");
         io.sockets.sockets.forEach((clientsocket) => {
@@ -244,9 +248,9 @@ io.on('connection', function(socket) {
             console.log(`Username'y przy tym stole:`);
             console.log(server.tables[table_id - 1].players);
             if(server.tables[table_id - 1].players.includes(username)) {
-                console.log(`Robie redirect dla uzytkownika o ciasteczku ${cookies.username}`);
+                console.log(`Robie redirect dla uzytkownika o ciasteczku ${username}`);
                 // clientsocket.emit("redirect",{});
-                var p = new logic.Player(username);
+                let p = new logic.Player(username);
                 players.push(p);
                 table_of_user[username] = table_id;
                 player_of_user[username] = p;
@@ -258,7 +262,9 @@ io.on('connection', function(socket) {
         io.sockets.sockets.forEach((clientsocket) => {
             let username = cookie.parse(clientsocket.handshake.headers.cookie);
             username = JSON.parse(username.cookie.slice(2)).username;
+            console.log(table_of_user);
             if(server.tables[table_id - 1].players.includes(username)) {
+                console.log("wyslano redirect!");
                 clientsocket.emit("redirect",{});
             }
         });

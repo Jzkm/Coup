@@ -271,7 +271,7 @@
                 });
                 gameLogContainer.appendChild(button2);
             } else if (data.game.state == 3) {
-                consele.log("it seems we got lost");
+                console.log("it seems we got lost");
             } else if (data.game.state == 4) {
                 if (data.game.turn_owner.handle != data.player.handle) {
                     let infoHeader = document.createElement('h3');
@@ -426,9 +426,9 @@
                 });
                 gameLogContainer.appendChild(button2);
             } else if (data.game.state == 9) {
-                consele.log("it seems we got lost");
+                console.log("it seems we got lost");
             } else if (data.game.state == 10) {
-                consele.log("it seems we got lost");
+                console.log("it seems we got lost");
             } else if (data.game.state == 14) {
                 let infoHeader = document.createElement('h3');
                 infoHeader.textContent = `Action resolving.`;
@@ -505,7 +505,7 @@
                     }
                 }
             } else if (data.game.state == 11) {
-                consele.log("it seems we got lost");
+                console.log("it seems we got lost");
             } else if (data.game.state == 13) {
                 if (data.game.blocker.handle != data.player.handle) {
                     let infoHeader = document.createElement('h3');

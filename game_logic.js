@@ -434,6 +434,7 @@ class Game {
         this.blocker.cards.push(this.draw_card_from_deck());
 
         this.state = 11;
+        this.handle_action(player,"failed","","");
         console.log("State 12 resolved");
     }
 
