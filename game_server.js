@@ -204,6 +204,12 @@ io.on('connection', function(socket) {
 
         game.handle_action(player,action,source,target);
 
+        for(var plr of game.players) {
+            if(plr.handle == player.handle) {
+                player = plr;
+            }
+        }
+
         console.log("Tak wyglada gra po update:");
         console.log(game.players[0].cards.length);
         console.log(game.players[1].cards.length);

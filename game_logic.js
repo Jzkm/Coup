@@ -151,6 +151,13 @@ class Game {
         return this.blocker.cards.includes(this.blocking_with);
     }
 
+    skip_dead_player(player,action,source,target) {
+        if(player.cards.length == 0 && this.turn_owner.handle == player.handle) {
+            this.state = 1;
+            this.turn_owner = this.next_player_turn();
+        }
+    }
+
     valid_action(player,action,source,target) {
         let ct = 0;
         for(let plr of this.players) {
@@ -160,13 +167,12 @@ class Game {
         }
         this.players_alive = ct;
 
-        if(player.cards.length == 0 && this.turn_owner.handle == player.handle) {
-            this.state = 1;
-            this.turn_owner = this.next_player_turn();
-        }
+        this.skip_dead_player(player,action,source,target);
 
         return player.cards.length > 0;
     }
+
+
 
     is_end(player,action,source,target) {
         let ct = 0;
@@ -187,7 +193,13 @@ class Game {
             idx++;
         }
 
-        idx = (idx + 1) % (this.players.length);
+        var not_found = true;
+        while(not_found) {
+            idx = (idx + 1) % (this.players.length);
+            if(this.players[idx].cards.length > 0) {
+                not_found = false;
+            }
+        }
         return this.players[idx];
     }
 
@@ -450,14 +462,20 @@ class Game {
     
 
     handle_action(player,action,source,target) {
+        for(var plr of this.players) {
+            if(plr.handle == player.handle) {
+                player = plr;
+            }
+        }
+
         if(this.valid_action(player,action,source,target)) {
+            console.log("Ważne info!!!11");
+            console.log(player);
             let fn = "handle_state" + this.state;
             this[fn](player,action,source,target);
             console.log("Successful action");
         }
-        else {
-            
-        }
+        this.skip_dead_player(player,action,source,target);
         if(this.is_end(player,action,source,target)) {
             console.log("NIe powinno mnie tu być!");
             for(let plr of this.players) {
