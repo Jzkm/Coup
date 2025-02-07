@@ -80,7 +80,7 @@ class Game {
         this.players_alive = this.players.length;
 
         for(let player of this.players) {
-            player.coins = 8;
+            player.coins = 2;
             player.cards = this.deck.splice(0,2);
         }
 

@@ -74,7 +74,6 @@
         };
 
         socket.on('vis_update', (data) => {
-            console.log("Doszedłem tutaj");
             updatePlayerList(data);
             updateGameLog(data);
             updatePlayerHand(data);
@@ -190,7 +189,6 @@
                     if (working_button) {
                         let action = entry[3];
                         button.addEventListener("click", () => {
-                            // console.log("click");
                             if (action == "coup" || action == "assassinate" || action == "steal") {
                                 data.game.action = action;
                                 data.game.state = 15;
@@ -227,7 +225,7 @@
                 targetSelectionHeader.textContent = `Choose target:`;
                 gameLogContainer.appendChild(targetSelectionHeader);
                 data.game.players.forEach(player => {
-                    if (player.handle != data.player.handle) {
+                    if (player.handle != data.player.handle && player.cards.length > 0) {
                         const button = document.createElement('button');
                         button.textContent = player.handle;
                         button.addEventListener('click', () => {
@@ -436,7 +434,6 @@
                 infoHeader.textContent = `Action resolving.`;
                 gameLogContainer.appendChild(infoHeader);
 
-                console.log(actions_to_uwr[data.game.selected_action]);
                 if (data.game.selected_action != "assassinate" && data.game.selected_action != "coup" && data.game.selected_action != "exchange") {
                     if (data.player.handle == data.game.turn_owner.handle) {
                         let action = "end_of_turn";
@@ -568,8 +565,6 @@
             let cardsHeader = document.createElement('h3');
             cardsHeader.textContent = 'Your cards:';
             playerHandContainer.appendChild(cardsHeader);
-            console.log("Tutaj1!!!!!");
-            console.log(data.player.cards);
             data.player.cards.forEach(card => {
                 let cardImg = document.createElement('img');
                 cardImg.src = `/instructors/${coup_to_uwr[card]}.png`;
