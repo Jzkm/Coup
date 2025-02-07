@@ -127,7 +127,7 @@ class Game {
             return "duke";
         }
         if(action == "assassinate") {
-            return "assasin";
+            return "assassin";
         }
         return "";
     }
@@ -450,6 +450,14 @@ class Game {
     
 
     handle_action(player,action,source,target) {
+        if(this.valid_action(player,action,source,target)) {
+            let fn = "handle_state" + this.state;
+            this[fn](player,action,source,target);
+            console.log("Successful action");
+        }
+        else {
+            
+        }
         if(this.is_end(player,action,source,target)) {
             console.log("NIe powinno mnie tu być!");
             for(let plr of this.players) {
@@ -457,14 +465,6 @@ class Game {
                     this.winner = plr;
                 }
             }
-        }
-        else if(this.valid_action(player,action,source,target)) {
-            let fn = "handle_state" + this.state;
-            this[fn](player,action,source,target);
-            console.log("Successful action");
-        }
-        else {
-            console.log("Invalid action");
         }
     }
 
