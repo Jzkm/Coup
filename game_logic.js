@@ -159,6 +159,12 @@ class Game {
             }
         }
         this.players_alive = ct;
+
+        if(player.cards.length == 0 && this.turn_owner.handle == player.handle) {
+            this.state = 1;
+            this.turn_owner = this.next_player_turn();
+        }
+
         return player.cards.length > 0;
     }
 
